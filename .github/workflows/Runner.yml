@@ -30,6 +30,7 @@ on:
 jobs:
   run-script:
     runs-on: ${{ github.event.inputs.OS }}
+    name: "Runner Script (${{ github.event.inputs.OS }}; ${{ github.event.inputs.ID }})"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -47,10 +48,11 @@ jobs:
 
       - name: Init
         id: init
-        shell: bash
+        shell: sudo bash
         continue-on-error: true
         run: |
-          mkdir -p /runner /input /env /local /output
+          sudo mkdir -m 775 -p /runner /input /env /local /output
+          sudo chown root:everybody /runner /input /env /local /output
           wget -O /input/init.bash ${{ github.event.inputs.init }}
           wget -O /input/config.dgb ${{ github.event.inputs.config }}
           wget -O /input/callback.dgb ${{ github.event.inputs.callback }}
