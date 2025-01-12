@@ -48,7 +48,7 @@ jobs:
 
       - name: Init
         id: init
-        shell: sudo bash
+        shell: bash
         continue-on-error: true
         run: |
           sudo mkdir -m 775 -p /runner /input /env /local /output
