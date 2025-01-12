@@ -51,9 +51,8 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          sudo usermod -a -G runner runner
           sudo mkdir -m 775 -p /runner /input /env /local /output
-          sudo chown root:runner /runner /input /env /local /output
+          sudo chown runner:runner /runner /input /env /local /output
           wget -O /input/init.bash ${{ github.event.inputs.init }} || true
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
           wget -O /input/callback.dgb ${{ github.event.inputs.callback }} || true
