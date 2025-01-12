@@ -1,0 +1,12 @@
+name: Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  init:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hello, world!
+        run: echo Hello, world!
