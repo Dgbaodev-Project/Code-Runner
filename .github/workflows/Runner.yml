@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
         run: |
           sudo mkdir -m 775 -p /runner /input /env /local /output
-          sudo chown root:everybody /runner /input /env /local /output
+          sudo chown root:runner /runner /input /env /local /output
           wget -O /input/init.bash ${{ github.event.inputs.init }}
           wget -O /input/config.dgb ${{ github.event.inputs.config }}
           wget -O /input/callback.dgb ${{ github.event.inputs.callback }}
