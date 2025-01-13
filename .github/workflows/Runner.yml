@@ -64,7 +64,7 @@ jobs:
 
           echo "Rename hostname"
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
-          sudo cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(dgb-reader main id).freesites.eu.org"
+          sudo cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(dgb-reader main id).freesites.eu.org" > /dev/null 2>&1
           echo "Run"
           sudo cloudflared tunnel run websocket-dgbaodev > /output/cloudflared.log 2>&1 &
           pid_x=$!

@@ -11,7 +11,7 @@ return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
 return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
 return.callback.auth=host:auth/callback-auth.dgb
 
-runner.script.init=https://raw.githubusercontent.com/Dgbaodev-Project/Code-Runner/refs/heads/main/storage/init_test.sh
+runner.script.init=drive-nhatgg81:private/init_test.sh
 runner.script.init_log=drive-nhatgg81:log/TEST-JOB-11010101_init.log
 runner.script.script=
 runner.script.command=
