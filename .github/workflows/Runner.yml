@@ -17,7 +17,7 @@ on:
 jobs:
   run-script:
     runs-on: ${{ github.event.inputs.OS }}
-    name: "Runner Script (${{ github.event.inputs.OS }}; ${{ github.event.inputs.ID }})"
+    name: "Runner Script (${{ github.event.inputs.OS }})"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
