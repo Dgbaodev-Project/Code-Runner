@@ -66,8 +66,9 @@ jobs:
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
 
           echo "Run"
-          sudo cloudflared tunnel run websocket-dgbaodev > /dev/null 2>&1 &
-          echo $! | sudo tee /root/cloudflared.pid > /dev/null
+          sudo cloudflared tunnel run websocket-dgbaodev > /root/cloudflared.log 2>&1 &
+          pid_x=$!
+          echo $pid_x | sudo tee /root/cloudflared.pid > /dev/null
 
           sudo chmod 700 -R /root/.cloudflared
           sudo chmod 600 /root/cloudflared.pid
@@ -75,8 +76,13 @@ jobs:
           echo "Waiting for tunnel to start..."
           sleep 5
 
-          if ! sudo sh -c "ps -p \$(cat /root/cloudflared.pid) > /dev/null 2>&1"; then
-            echo "Cloudflared tunnel failed to start"; exit 1
+          if ! sudo ps -p $pid_x > /dev/null 2>&1; then
+            echo "Cloudflared tunnel failed to start"
+            sudo cp /root/cloudflared.log /output/cloudflared.log
+            sudo chown runner:docker /output/cloudflared.log
+            sudo chmod 775 /output/cloudflared.log
+            rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
+            exit 1
           fi
           echo "OK"
       - name: Create user - runner_clone

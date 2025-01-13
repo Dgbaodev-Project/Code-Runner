@@ -15,3 +15,5 @@ runner.script.init=
 runner.script.script=
 runner.script.args=
 runner.script.program=
+
+debug.log=drive-nhatgg81:log/
