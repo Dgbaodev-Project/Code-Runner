@@ -94,7 +94,8 @@ jobs:
           rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
-          sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
+          md5sum /runner/init.sh
+          sudo -u runner_clone bash /runner/init.sh
       - name: Run Programs With WS
         run: |
           if ! sudo ps -p $(sudo cat /root/cloudflared.pid) > /dev/null 2>&1; then
