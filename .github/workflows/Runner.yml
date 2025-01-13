@@ -128,6 +128,7 @@ jobs:
           sudo node ./generate_token.js
           sudo cp ./config.dgb /output/auth_config.dgb
           sudo chown runner:docker /output/auth_config.dgb
+          sudo chmod 775 /output/auth_config.dgb
           rclone copyto /output/auth_config.dgb "$Auth_Callback_Config"
           sudo rm -f /output/auth_config.dgb
           
