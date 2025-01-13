@@ -107,7 +107,6 @@ jobs:
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
           sudo -u runner_clone /runner/init.sh > /output/init_log.log 2>&1
-          rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
       - name: Run Programs With WS
         run: |
           echo Pass
@@ -119,10 +118,18 @@ jobs:
           if sudo [ -f /root/cloudflared.pid ]; then
             sudo kill $(sudo cat /root/cloudflared.pid) && echo "Cloudflared stopped successfully" || echo "Failed to stop cloudflared"
             sudo rm -f /root/cloudflared.pid
-            sudo chown runner:docker /output/cloudflared.log
-            sudo chmod 770 /output/cloudflared.log
-            rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
             sudo rm -rf /root/.cloudflared
           else
             echo "No PID file found."
           fi
+      - name: Post Log
+        if: always()
+        run: |
+          sudo chown runner:docker /output/cloudflared.log
+          sudo chmod 770 /output/cloudflared.log
+          sudo chown runner:docker /output/init_log.log
+          sudo chmod 770 /output/init_log.log
+          rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
+          rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
+
+
