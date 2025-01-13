@@ -40,8 +40,13 @@ jobs:
         continue-on-error: true
         run: |
           sudo mkdir -m 770 -p /input /env /local /output
+          sudo mkdir -m 771 -p /ws
           sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
       - name: Setup cloudflared
         run: |
           echo "Get Files"
@@ -95,6 +100,14 @@ jobs:
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
           sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
+      - name: Init WS
+        run: |
+          cd /ws
+          sudo pwd
+          sudo npm init -y
+          sudo npm install ws jsonwebtoken dotenv
+
+
       - name: Run Programs With WS
         run: |
           if ! sudo ps -p $(sudo cat /root/cloudflared.pid) > /dev/null 2>&1; then
