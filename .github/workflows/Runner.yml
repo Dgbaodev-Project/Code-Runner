@@ -44,6 +44,7 @@ jobs:
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
       - name: Setup cloudflared
         run: |
+          echo "Get Files"
           cloudflared_cert=$(dgb-reader cloudflared cert)
           cloudflared_config=$(dgb-reader cloudflared config)
           cloudflared_tunnel=$(dgb-reader cloudflared tunnel)
@@ -58,10 +59,13 @@ jobs:
           if [ -f "cert.pem" ];then exit 1 fi
           if [ -f "config.yml" ];then exit 1 fi
           if [ -f "tunnel.json" ];then exit 1 fi
+          echo "Rename hostname"
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml
+          echo "Run"
           sudo cloudflared tunnel run websocket-dgbaodev > /dev/null 2>&1 &
           sudo echo $! > /root/cloudflared.pid
           chmod 770 -R /root/.cloudflared /root/cloudflared.pid
+          echo "OK"
           sleep 5
       - name: Create user - runner_clone
         run: |
