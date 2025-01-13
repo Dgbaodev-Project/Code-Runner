@@ -120,7 +120,7 @@ jobs:
           echo "ROLE=$(sudo dgb-reader auth role)" | sudo tee -a .env > /dev/null
           echo "PORT=9999" | sudo tee -a .env > /dev/null
           sudo node ./generate_token.js
-          sudo md5file ./config.dgb
+          sudo md5sum ./config.dgb
           sudo mv ./config.dgb /output/auth_config.dgb
           sudo chmod 777 /output/auth_config.dgb
           rclone copyto /output/auth_config.dgb "$Auth_Callback_Config"
