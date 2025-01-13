@@ -47,13 +47,11 @@ int main(int argc, char* argv[]) {
     }
 
     string configFilePath = "/input/config.dgb";
-    if(argc > 1 && args[0].find("-") != 0) {
-        configFilePath = args[0];
-    }
 
     ifstream configFile(configFilePath);
     if(!configFile.is_open()) {
-        return 0;
+        cerr << "Không thể mở tệp: " << configFilePath << endl;
+        return 1;
     }
 
     map<string, vector<string>> configMap;
@@ -77,7 +75,8 @@ int main(int argc, char* argv[]) {
     configFile.close();
 
     if(args.empty()) {
-        return 0;
+        cerr << "Không có khóa nào được cung cấp." << endl;
+        return 1;
     }
 
     bool hasIndex = false;
@@ -87,7 +86,8 @@ int main(int argc, char* argv[]) {
         index = stoi(args.back());
         args.pop_back();
         if(args.empty()) {
-            return 0;
+            cerr << "Không có khóa nào được cung cấp sau chỉ số." << endl;
+            return 1;
         }
     }
 
@@ -99,13 +99,15 @@ int main(int argc, char* argv[]) {
 
     auto it = configMap.find(keyPath);
     if(it == configMap.end()) {
-        return 0;
+        cerr << "Không tìm thấy khóa: " << keyPath << endl;
+        return 1;
     }
 
     vector<string> values = it->second;
     if(hasIndex) {
         if(index < 0 || index >= (int)values.size()) {
-            return 0;
+            cerr << "Chỉ số " << index << " vượt quá phạm vi (0 - " << values.size()-1 << ")." << endl;
+            return 1;
         }
         cout << values[index] << endl;
     }
