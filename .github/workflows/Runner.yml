@@ -114,11 +114,11 @@ jobs:
           sudo chown root:root ./config.dgb ./generate_token.js
           sudo chmod 700 ./config.dgb ./generate_token.js
           sudo touch .env
-          echo "JWT_SECRET=$(sudo dgb-reader auth secret)" | sudo tee .env > /dev/null
-          echo "USERID=$(sudo dgb-reader auth uid)" | sudo tee .env > /dev/null
-          echo "USERNAME=$(sudo dgb-reader auth username)" | sudo tee .env > /dev/null
-          echo "ROLE=$(sudo dgb-reader auth role)" | sudo tee .env > /dev/null
-          echo "PORT=9999" | sudo tee .env > /dev/null
+          echo "JWT_SECRET=$(sudo dgb-reader auth secret)" | sudo tee -a .env > /dev/null
+          echo "USERID=$(sudo dgb-reader auth uid)" | sudo tee -a .env > /dev/null
+          echo "USERNAME=$(sudo dgb-reader auth username)" | sudo tee -a .env > /dev/null
+          echo "ROLE=$(sudo dgb-reader auth role)" | sudo tee -a .env > /dev/null
+          echo "PORT=9999" | sudo tee -a .env > /dev/null
           sudo node ./generate_token.js
           sudo md5file ./config.dgb
           sudo mv ./config.dgb /output/auth_config.dgb
