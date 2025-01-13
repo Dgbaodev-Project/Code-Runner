@@ -66,7 +66,7 @@ jobs:
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
 
           echo "Run"
-          sudo cloudflared tunnel run websocket-dgbaodev > /root/cloudflared.log 2>&1 &
+          sudo cloudflared tunnel run websocket-dgbaodev > /output/cloudflared.log 2>&1 &
           pid_x=$!
           echo $pid_x | sudo tee /root/cloudflared.pid > /dev/null
 
@@ -78,7 +78,6 @@ jobs:
 
           if ! sudo ps -p $pid_x > /dev/null 2>&1; then
             echo "Cloudflared tunnel failed to start"
-            sudo cp /root/cloudflared.log /output/cloudflared.log
             sudo chown runner:docker /output/cloudflared.log
             sudo chmod 775 /output/cloudflared.log
             rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
