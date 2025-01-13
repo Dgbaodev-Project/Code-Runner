@@ -1,4 +1,4 @@
-main.id=TEST-JOB-11010101
+main.id=testcmdfs-123123
 
 cloudflared.cert=drive-nhatgg81:private/cert.pem
 cloudflared.config=drive-nhatgg81:private/config.yml
@@ -8,11 +8,11 @@ init.apt.repository=
 init.apt.packages=
 
 return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
-return.callback.auth=host:auth/callback-auth-TEST-JOB-11010101.dgb
+return.callback.auth=host:auth/callback-auth-testcmdfs-123123.dgb
 return.callback.program=host:auth/ws.js
 
 runner.script.init=drive-nhatgg81:private/init_test.sh
-runner.script.init_log=drive-nhatgg81:log/TEST-JOB-11010101_init.log
+runner.script.init_log=drive-nhatgg81:log/testcmdfs-123123_init.log
 runner.script.script=drive-nhatgg81:private/init_test.sh
 runner.script.command=python
 
