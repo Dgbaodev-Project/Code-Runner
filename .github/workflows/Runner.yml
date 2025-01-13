@@ -78,9 +78,6 @@ jobs:
 
           if ! sudo ps -p $pid_x > /dev/null 2>&1; then
             echo "Cloudflared tunnel failed to start"
-            sudo chown runner:docker /output/cloudflared.log
-            sudo chmod 770 /output/cloudflared.log
-            rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
             exit 1
           fi
           echo "OK"
