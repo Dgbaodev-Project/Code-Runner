@@ -75,7 +75,7 @@ jobs:
           echo "Waiting for tunnel to start..."
           sleep 5
 
-          if ! sudo ps -p $(sudo cat /root/cloudflared.pid) > /dev/null 2>&1; then
+          if ! sudo sh -c "ps -p \$(cat /root/cloudflared.pid) > /dev/null 2>&1"; then
             echo "Cloudflared tunnel failed to start"; exit 1
           fi
           echo "OK"
