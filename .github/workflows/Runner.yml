@@ -108,8 +108,8 @@ jobs:
           ID="$(dgb-reader main id)"
           Auth_Callback_Config=$(dgb-reader return callback auth)
           rclone copyto "$Auth_Callback_Config" /output/auth_config.dgb
-          rclone copyto "$(dgb-reader auth program)" /input/generate_token.js
           sudo mv /output/auth_config.dgb ./config.dgb
+          rclone copyto "$(dgb-reader auth program)" /input/generate_token.js
           sudo mv /input/generate_token.js ./generate_token.js
           sudo chown root:root ./config.dgb ./generate_token.js
           sudo chmod 700 ./config.dgb ./generate_token.js
