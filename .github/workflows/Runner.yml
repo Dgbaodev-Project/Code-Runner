@@ -25,6 +25,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: Set ID
         id: set_id
         run: |
@@ -36,10 +40,6 @@ jobs:
             echo "ID << INPUT_ID: ${{ github.event.inputs.ID }}"
             echo "JID=${{ github.event.inputs.ID }}" >> $GITHUB_OUTPUT
           fi
-      - name: Setup Rclone
-          uses: AnimMouse/setup-rclone@v1
-          with: |
-            rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: Init
         id: init
         shell: bash
