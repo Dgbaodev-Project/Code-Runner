@@ -7,21 +7,12 @@ on:
         description: "Operating System"
         type: choice
         options:
-          - ubuntu-22.04
           - ubuntu-latest
-        required: true
-      script:
-        description: "Script URL"
-        required: true
-      init:
-        description: "Init Script URL"
+          - ubuntu-22.04
         required: true
       config:
           description: "Config URL"
           required: true
-      callback:
-        description: "Callback URL"
-        required: true
       ID:
         description: "ID JOB"
         default: "RANDOM"
@@ -45,34 +36,34 @@ jobs:
             echo "ID << INPUT_ID: ${{ github.event.inputs.ID }}"
             echo "JID=${{ github.event.inputs.ID }}" >> $GITHUB_OUTPUT
           fi
-
+      - name: Setup Rclone
+          uses: AnimMouse/setup-rclone@v1
+          with:
+            rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: Init
         id: init
         shell: bash
         continue-on-error: true
         run: |
           sudo mkdir -m 775 -p /runner /input /env /local /output
-          sudo chown runner:runner /runner /input /env /local /output
-          wget -O /input/init.bash ${{ github.event.inputs.init }} || true
+          sudo chown runner:docker /runner /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
-          wget -O /input/callback.dgb ${{ github.event.inputs.callback }} || true
-          cd /runner && bash /input/init.bash && cd -
-          
+
       - name: Run tests
         run: |
-          echo "User: $(id)"
-          echo "Operating System: ${{ github.event.inputs.OS }}"
-          echo "Full info: $(uname -a)"
-          echo "Repo Path: $GITHUB_WORKSPACE"
-          echo "File: " && ls -lah $GITHUB_WORKSPACE
-          echo "Job ID: ${{ steps.set_id.outputs.JID }}"
-          echo "Path: /runner"
-          echo "File: " && ls -lah /runner
-          echo "Path: /input"
-          echo "File: " && ls -lah /input
-          echo "Path: /env"
-          echo "File: " && ls -lah /env
-          echo "Path: /local"
-          echo "File: " && ls -lah /local
-          echo "Path: /output"
-          echo "File: " && ls -lah /output
+          echo "-----------------------------------------------"
+          echo "Host:"
+          rclone ls host:
+          echo "-----------------------------------------------"
+          echo "Drive nhatgg81:"
+          rclone ls drive-nhatgg81:
+          echo "-----------------------------------------------"
+          echo "Drive gumiho10q:"
+          rclone ls drive-gumiho10q:
+          echo "-----------------------------------------------"
+          echo "Mega nhatgg81:"
+          rclone ls mega-nhatgg81:
+          echo "-----------------------------------------------"
+          echo "OneDrive dgbaodev:"
+          rclone ls onedrive-dgbaodev:
+          echo "-----------------------------------------------"
