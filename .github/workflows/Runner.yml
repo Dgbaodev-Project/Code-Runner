@@ -26,7 +26,7 @@ jobs:
         with:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: Install cloudflared
-        shell: bash
+        timeout-minutes: 1
         run: |
           sudo wget -O /root/cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
           sudo apt install /root/cloudflared.deb
@@ -39,7 +39,7 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          sudo mkdir -m 775 -p /input /env /local /output
+          sudo mkdir -m 770 -p /input /env /local /output
           sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
       - name: Setup cloudflared
@@ -79,7 +79,7 @@ jobs:
           if ! sudo ps -p $pid_x > /dev/null 2>&1; then
             echo "Cloudflared tunnel failed to start"
             sudo chown runner:docker /output/cloudflared.log
-            sudo chmod 775 /output/cloudflared.log
+            sudo chmod 770 /output/cloudflared.log
             rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
             exit 1
           fi
@@ -90,3 +90,32 @@ jobs:
           echo 'runner_clone:Runner_clone_0@' | sudo chpasswd
           sudo chmod -R 775 /runner
           sudo chown runner_clone:docker /runner
+      - name: Init Programs
+        timeout-minutes: 10
+        run: |
+          cd /runner
+          for i in $(dgb-reader init apt repository); do
+            sudo add-apt-repository $i
+          done
+          for i in $(dgb-reader init apt packages); do
+            sudo apt install $i
+          done
+          timeout 10s sudo -u runner_clone rclone config
+          rclone copyto "$(dgb-reader runner script init)" /runner/init.sh || { echo "Failed to copy init.sh"; exit 1; }
+
+
+
+
+      - name: Kill cloudflared
+        if: always()
+        run: |
+          if sudo [ -f /root/cloudflared.pid ]; then
+            sudo kill $(sudo cat /root/cloudflared.pid) && echo "Cloudflared stopped successfully" || echo "Failed to stop cloudflared"
+            sudo rm -f /root/cloudflared.pid
+            sudo chown runner:docker /output/cloudflared.log
+            sudo chmod 770 /output/cloudflared.log
+            rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
+            sudo rm -rf /root/.cloudflared
+          else
+            echo "No PID file found."
+          fi

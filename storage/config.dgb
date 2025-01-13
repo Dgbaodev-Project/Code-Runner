@@ -12,6 +12,7 @@ return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
 return.callback.auth=host:auth/callback-auth.dgb
 
 runner.script.init=
+runner.script.init_command=
 runner.script.script=
 runner.script.args=
 runner.script.program=
