@@ -72,15 +72,6 @@ jobs:
 
           sudo chmod 700 -R /root/.cloudflared
           sudo chmod 600 /root/cloudflared.pid
-
-          echo "Waiting for tunnel to start..."
-          sleep 5
-
-          if ! sudo ps -p $pid_x > /dev/null 2>&1; then
-            echo "Cloudflared tunnel failed to start"
-            exit 1
-          fi
-          echo "OK"
       - name: Create user - runner_clone
         run: |
           sudo useradd -m -d /runner runner_clone
@@ -103,9 +94,13 @@ jobs:
           rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
-          sudo -u runner_clone /runner/init.sh > /output/init_log.log 2>&1
+          sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
       - name: Run Programs With WS
         run: |
+          if ! sudo ps -p $(sudo cat /root/cloudflared.pid) > /dev/null 2>&1; then
+            echo "Cloudflared tunnel failed to start"
+            exit 1
+          fi
           echo Pass
 
 
