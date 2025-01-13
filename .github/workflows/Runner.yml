@@ -48,25 +48,37 @@ jobs:
           cloudflared_cert=$(dgb-reader cloudflared cert)
           cloudflared_config=$(dgb-reader cloudflared config)
           cloudflared_tunnel=$(dgb-reader cloudflared tunnel)
-          sudo mkdir -m 770 -p /root/.cloudflared
-          rclone copyto $cloudflared_cert cert.pem
-          rclone copyto $cloudflared_config config.yml
-          rclone copyto $cloudflared_tunnel tunnel.json
+          
+          sudo mkdir -m 700 -p /root/.cloudflared
+          rclone copyto "$cloudflared_cert" cert.pem || { echo "Failed to copy cert.pem"; exit 1; }
+          rclone copyto "$cloudflared_config" config.yml || { echo "Failed to copy config.yml"; exit 1; }
+          rclone copyto "$cloudflared_tunnel" tunnel.json || { echo "Failed to copy tunnel.json"; exit 1; }
+          
           sudo mv cert.pem /root/.cloudflared/cert.pem
           sudo mv config.yml /root/.cloudflared/config.yml
           sudo mv tunnel.json "/root/.cloudflared/${{ secrets.TUNNEL_ID }}.json"
-          sudo rm -rf cert.pem config.yml tunnel.json || true
-          if [ -f "cert.pem" ];then exit 1 fi
-          if [ -f "config.yml" ];then exit 1 fi
-          if [ -f "tunnel.json" ];then exit 1 fi
+          
+          sudo rm -f cert.pem config.yml tunnel.json
+
+          [ ! -f "cert.pem" ] && [ ! -f "config.yml" ] && [ ! -f "tunnel.json" ] || { echo "Temporary files were not removed"; exit 1; }
+
           echo "Rename hostname"
-          sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml
+          sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
+
           echo "Run"
           sudo cloudflared tunnel run websocket-dgbaodev > /dev/null 2>&1 &
-          sudo echo $! > /root/cloudflared.pid
-          chmod 770 -R /root/.cloudflared /root/cloudflared.pid
-          echo "OK"
+          echo $! | sudo tee /root/cloudflared.pid > /dev/null
+
+          sudo chmod 700 -R /root/.cloudflared
+          sudo chmod 600 /root/cloudflared.pid
+
+          echo "Waiting for tunnel to start..."
           sleep 5
+
+          if ! ps -p $(cat /root/cloudflared.pid) > /dev/null 2>&1; then
+            echo "Cloudflared tunnel failed to start"; exit 1
+          fi
+          echo "OK"
       - name: Create user - runner_clone
         run: |
           sudo useradd -m -d /runner runner_clone
