@@ -53,17 +53,17 @@ jobs:
         run: |
           echo "-----------------------------------------------"
           echo "Host:"
-          rclone ls host:
+          rclone lsd host:
           echo "-----------------------------------------------"
           echo "Drive nhatgg81:"
-          rclone ls drive-nhatgg81:
+          rclone lsd drive-nhatgg81:
           echo "-----------------------------------------------"
           echo "Drive gumiho10q:"
-          rclone ls drive-gumiho10q:
+          rclone lsd drive-gumiho10q:
           echo "-----------------------------------------------"
           echo "Mega nhatgg81:"
-          rclone ls mega-nhatgg81:
+          rclone lsd mega-nhatgg81:
           echo "-----------------------------------------------"
           echo "OneDrive dgbaodev:"
-          rclone ls onedrive-dgbaodev:
+          rclone lsd onedrive-dgbaodev:
           echo "-----------------------------------------------"
