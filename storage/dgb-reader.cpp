@@ -46,14 +46,20 @@ int main(int argc, char* argv[]) {
         args.emplace_back(argv[i]);
     }
 
+    string cFilePath = "./config.dgb";
     string configFilePath = "/input/config.dgb";
+    ifstream configFile;
 
-    ifstream configFile(configFilePath);
+    configFile.open(cFilePath);
+    if(configFile.is_open()) goto _continue;
+
+
+    configFile.open(configFilePath);
     if(!configFile.is_open()) {
         cerr << "Không thể mở tệp: " << configFilePath << endl;
         return 1;
     }
-
+    _continue:
     map<string, vector<string>> configMap;
     string line;
     while(getline(configFile, line)) {

@@ -8,8 +8,7 @@ init.apt.repository=
 init.apt.packages=
 
 return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
-return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
-return.callback.auth=host:auth/callback-auth.dgb
+return.callback.auth=host:auth/callback-auth-TEST-JOB-11010101.dgb
 
 runner.script.init=drive-nhatgg81:private/init_test.sh
 runner.script.init_log=drive-nhatgg81:log/TEST-JOB-11010101_init.log
