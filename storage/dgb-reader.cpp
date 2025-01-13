@@ -46,14 +46,14 @@ int main(int argc, char* argv[]) {
         args.emplace_back(argv[i]);
     }
 
-    string cFilePath = "./config.dgb";
+    string cFilePath = "/ws/config.dgb";
     string configFilePath = "/input/config.dgb";
     ifstream configFile;
 
     configFile.open(cFilePath);
     if(configFile.is_open()) goto _continue;
 
-
+    configFile.close();
     configFile.open(configFilePath);
     if(!configFile.is_open()) {
         cerr << "Không thể mở tệp: " << configFilePath << endl;
