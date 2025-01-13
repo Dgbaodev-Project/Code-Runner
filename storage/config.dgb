@@ -3,14 +3,9 @@ main.id=TEST-JOB-11010101
 init.apt.repository=ppa:deadsnakes/ppa; ppa:ondrej/php
 init.apt.packages=python3.13; php8.3
 
-init.rclone.host=host
-init.rclone.main=mega-nhatgg81
-init.rclone.packages=drive-nhatgg81
-init.rclone.backup=
-
 return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
 return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
-return.callback.auth=auth/callback-auth.dgb
+return.callback.auth=host:auth/callback-auth.dgb
 
 runner.script.init=
 runner.script.script=
