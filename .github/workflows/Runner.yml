@@ -11,7 +11,7 @@ on:
           - ubuntu-22.04
         required: true
       config:
-          description: "Config URL"
+          description: "Config BASE64"
           required: true
       ID:
         description: "ID JOB"
@@ -29,6 +29,15 @@ jobs:
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
+      - name: Install cloudflared
+        shell: bash
+        run: |
+          sudo apt install -y curl gnupg
+          curl -fsSL https://pkg.cloudflare.com/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloudflare-main.gpg
+          echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] https://pkg.cloudflare.com/ $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/cloudflare-main.list
+          sudo apt update
+          sudo apt install cloudflared
+          cloudflared --version || exit 1
       - name: Set ID
         id: set_id
         run: |
@@ -48,88 +57,32 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
-          sudo mkdir -m 775 -p /runner /input /env /local /output
-          sudo chown runner:docker /runner /input /env /local /output
+          sudo mkdir -m 775 -p /input /env /local /output
+          sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
-
-      - name: Run tests
+      - name: Setup cloudflared
         run: |
-          echo "Test DGB Reader"
-          echo "--------------------------------------------"
-          echo "Main/ID"
-          echo
-          dgb-reader main id
-          echo
-          echo "--------------------------------------------"
-          echo "Init/APT/Repository"
-          echo
-          dgb-reader init apt repository
-          echo
-          echo "KEY 0"
-          echo
-          dgb-reader init apt repository 0
-          echo
-          echo "KEY 1"
-          echo
-          dgb-reader init apt repository 1
-          echo
-          echo "--------------------------------------------"
-          echo "Init/APT/Packages"
-          echo
-          dgb-reader init apt packages
-          echo
-          echo "--------------------------------------------"
-          echo "Init/RClone/Host"
-          echo
-          dgb-reader init rclone host
-          echo
-          echo "--------------------------------------------"
-          echo "Init/RClone/Main"
-          echo
-          dgb-reader init rclone main
-          echo
-          echo "--------------------------------------------"
-          echo "Init/RClone/Packages"
-          echo
-          dgb-reader init rclone packages
-          echo
-          echo "--------------------------------------------"
-          echo "Init/RClone/Backup"
-          echo
-          dgb-reader init rclone backup
-          echo
-          echo "--------------------------------------------"
-          echo "Return/Callback/HTTPS"
-          echo
-          dgb-reader return callback https
-          echo
-          echo "--------------------------------------------"
-          echo "Return/Callback/WS"
-          echo
-          dgb-reader return callback ws
-          echo
-          echo "--------------------------------------------"
-          echo "Return/Callback/Auth"
-          echo
-          dgb-reader return callback auth
-          echo
-          echo "--------------------------------------------"
-          echo "Runner/Script/Init"
-          echo
-          dgb-reader runner script init
-          echo
-          echo "--------------------------------------------"
-          echo "Runner/Script/Script"
-          echo
-          dgb-reader runner script script
-          echo
-          echo "--------------------------------------------"
-          echo "Runner/Script/Args"
-          echo
-          dgb-reader runner script args
-          echo
-          echo "--------------------------------------------"
-          echo "Runner/Script/Program"
-          echo
-          dgb-reader runner script program
-          echo
+          cloudflared_cert=$(dgb-reader cloudflared cert)
+          cloudflared_config=$(dgb-reader cloudflared config)
+          cloudflared_tunnel=$(dgb-reader cloudflared tunnel)
+          sudo mkdir -m 770 -p /root/.cloudflared
+          rclone copyto $cloudflared_cert cert.pem
+          rclone copyto $cloudflared_config config.yml
+          rclone copyto $cloudflared_tunnel tunnel.json
+          sudo mv cert.pem /root/.cloudflared/cert.pem
+          sudo mv config.yml /root/.cloudflared/config.yml
+          sudo mv tunnel.json "/root/.cloudflared/${{ secrets.TUNNEL_ID }}.json"
+          sudo rm -rf cert.pem config.yml tunnel.json || true
+          if [ -f "cert.pem" ];then exit 1 fi
+          if [ -f "config.yml" ];then exit 1 fi
+          if [ -f "tunnel.json" ];then exit 1 fi
+          sudo cloudflared tunnel run websocket-dgbaodev > /dev/null 2>&1 &
+          sudo echo $! > /root/cloudflared.pid
+          sleep 5
+          chmod 770 -R /root/.cloudflared /root/cloudflared.pid
+      - name: Create user - runner_clone
+        run: |
+          sudo useradd -m -d /runner runner_clone
+          echo 'runner_clone:Runner_clone_0@' | sudo chpasswd
+          sudo chmod -R 775 /runner
+          sudo chown runner_clone:docker /runner

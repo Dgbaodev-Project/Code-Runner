@@ -1,5 +1,9 @@
 main.id=TEST-JOB-11010101
 
+cloudflared.cert=drive-nhatgg81:private/cert.pem
+cloudflared.config=drive-nhatgg81:private/config.yml
+cloudflared.tunnel=drive-nhatgg81:private/tunnel.json
+
 init.apt.repository=ppa:deadsnakes/ppa; ppa:ondrej/php
 init.apt.packages=python3.13; php8.3
 
