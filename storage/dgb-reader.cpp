@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         args.emplace_back(argv[i]);
     }
 
-    string cFilePath = "/ws/config.dgb";
+    string cFilePath = "./config.dgb";
     string configFilePath = "/input/config.dgb";
     ifstream configFile;
 
