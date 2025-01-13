@@ -38,7 +38,7 @@ jobs:
           fi
       - name: Setup Rclone
           uses: AnimMouse/setup-rclone@v1
-          with:
+          with: |
             rclone_config: ${{ secrets.RCLONE_CONFIG }}
       - name: Init
         id: init
