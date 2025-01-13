@@ -107,10 +107,12 @@ jobs:
           sudo npm install ws jsonwebtoken dotenv uuid
           ID="$(dgb-reader main id)"
           Auth_Callback_Config=$(dgb-reader return callback auth)
-          rclone copyto "$Auth_Callback_Config" /input/config.dgb
+          rclone copyto "$Auth_Callback_Config" /output/auth_config.dgb
           rclone copyto "$(dgb-reader auth program)" /input/generate_token.js
-          sudo mv /input/config.dgb ./config.dgb
+          sudo mv /output/auth_config.dgb ./config.dgb
           sudo mv /input/generate_token.js ./generate_token.js
+          sudo chown root:root ./config.dgb ./generate_token.js
+          sudo chmod 700 ./config.dgb ./generate_token.js
           sudo touch .env
           echo "JWT_SECRET=$(dgb-reader auth secret)" | sudo tee .env > /dev/null
           echo "USERID=$(dgb-reader auth uid)" | sudo tee .env > /dev/null
@@ -118,8 +120,10 @@ jobs:
           echo "ROLE=$(dgb-reader auth role)" | sudo tee .env > /dev/null
           echo "PORT=9999" | sudo tee .env > /dev/null
           sudo node ./generate_token.js
-          sudo mv ./config.dgb /input/config.dgb
-          rclone copyto /input/config.dgb "$Auth_Callback_Config"
+          sudo md5file ./config.dgb
+          sudo mv ./config.dgb /output/auth_config.dgb
+          sudo chmod 777 /output/auth_config.dgb
+          rclone copyto /output/auth_config.dgb "$Auth_Callback_Config"
 
       - name: Run Programs With WS
         run: |
