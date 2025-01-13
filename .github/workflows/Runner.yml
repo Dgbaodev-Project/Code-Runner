@@ -95,7 +95,7 @@ jobs:
         run: |
           cd /runner
           for i in $(dgb-reader init apt repository); do
-            sudo add-apt-repository $i
+            sudo add-apt-repository --yes $i
           done
           for i in $(dgb-reader init apt packages); do
             sudo apt install $i -y
@@ -105,7 +105,7 @@ jobs:
           sudo chmod 775 /runner/init.sh
           rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
           sudo chown runner_clone:docker /runner/script
-          sudo chmod 775 /runner/sctipt
+          sudo chmod 775 /runner/script
           sudo -u runner_clone /runner/init.sh > /output/init_log.log 2>&1
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
       - name: Run Programs With WS
