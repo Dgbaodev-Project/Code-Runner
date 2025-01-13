@@ -109,8 +109,8 @@ jobs:
           sudo -u runner_clone /runner/init.sh > /output/init_log.log 2>&1
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
       - name: Run Programs With WS
-          run: |
-            echo Pass
+        run: |
+          echo Pass
 
 
       - name: Kill cloudflared
