@@ -111,6 +111,7 @@ jobs:
           CallBack="$(dgb-reader return callback program)"
           rclone copyto "$CallBack" /input/callback.js
           rclone copyto "$Auth_Callback_Config" /output/auth_config.dgb
+          echo "WS=ws://ws-dgbaodev-$(dgb-reader main id).freesites.eu.org" | sudo tee -a /output/auth_config.dgb > /dev/null
           sudo mv /output/auth_config.dgb ./config.dgb
           sudo mv /input/callback.js ./callback.js
           rclone copyto "$(sudo dgb-reader auth program)" /input/generate_token.js
@@ -125,6 +126,10 @@ jobs:
           echo "PORT=9999" | sudo tee -a .env > /dev/null
           echo "COMMAND=\"$COMMAND\"" | sudo tee -a .env > /dev/null
           sudo node ./generate_token.js
+          sudo cp ./config.dgb /output/auth_config.dgb
+          sudo chown runner:docker /output/auth_config.dgb
+          rclone copyto /output/auth_config.dgb "$Auth_Callback_Config"
+          sudo rm -f /output/auth_config.dgb
           
       - name: Run Programs With WS
         run: |
