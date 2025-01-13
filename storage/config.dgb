@@ -8,7 +8,7 @@ init.rclone.main=mega-nhatgg81
 init.rclone.packages=drive-nhatgg81
 init.rclone.backup=
 
-return.callback.http=https://dgbaodev.freesites.eu.org/callback.php
+return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
 return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
 return.callback.auth=auth/callback-auth.dgb
 

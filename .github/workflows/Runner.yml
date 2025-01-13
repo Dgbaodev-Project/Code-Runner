@@ -40,6 +40,9 @@ jobs:
             echo "ID << INPUT_ID: ${{ github.event.inputs.ID }}"
             echo "JID=${{ github.event.inputs.ID }}" >> $GITHUB_OUTPUT
           fi
+      - name: Build DGB Reader
+        run: |
+          sudo g++ -o /usr/bin/dgb-reader "$GITHUB_WORKSPACE/storage/dgb-reader.cpp"
       - name: Init
         id: init
         shell: bash
@@ -51,19 +54,82 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "-----------------------------------------------"
-          echo "Host:"
-          rclone lsd host:
-          echo "-----------------------------------------------"
-          echo "Drive nhatgg81:"
-          rclone lsd drive-nhatgg81:
-          echo "-----------------------------------------------"
-          echo "Drive gumiho10q:"
-          rclone lsd drive-gumiho10q:
-          echo "-----------------------------------------------"
-          echo "Mega nhatgg81:"
-          rclone lsd mega-nhatgg81:
-          echo "-----------------------------------------------"
-          echo "OneDrive dgbaodev:"
-          rclone lsd onedrive-dgbaodev:
-          echo "-----------------------------------------------"
+          echo "Test DGB Reader"
+          echo "--------------------------------------------"
+          echo "Main/ID"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" main id
+          echo
+          echo "--------------------------------------------"
+          echo "Init/APT/Repository"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository
+          echo
+          echo "KEY 0"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository 0
+          echo
+          echo "KEY 1"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository 1
+          echo
+          echo "--------------------------------------------"
+          echo "Init/APT/Packages"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt packages
+          echo
+          echo "--------------------------------------------"
+          echo "Init/RClone/Host"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone host
+          echo
+          echo "--------------------------------------------"
+          echo "Init/RClone/Main"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone main
+          echo
+          echo "--------------------------------------------"
+          echo "Init/RClone/Packages"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone packages
+          echo
+          echo "--------------------------------------------"
+          echo "Init/RClone/Backup"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone backup
+          echo
+          echo "--------------------------------------------"
+          echo "Return/Callback/HTTPS"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback https
+          echo
+          echo "--------------------------------------------"
+          echo "Return/Callback/WS"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback ws
+          echo
+          echo "--------------------------------------------"
+          echo "Return/Callback/Auth"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback auth
+          echo
+          echo "--------------------------------------------"
+          echo "Runner/Script/Init"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script init
+          echo
+          echo "--------------------------------------------"
+          echo "Runner/Script/Script"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script script
+          echo
+          echo "--------------------------------------------"
+          echo "Runner/Script/Args"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script args
+          echo
+          echo "--------------------------------------------"
+          echo "Runner/Script/Program"
+          echo
+          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script program
+          echo
