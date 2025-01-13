@@ -1,8 +1,7 @@
-#!/bin/bash
-echo $BASH 
+echo $BASH
 echo $PATH
 echo $ENV
-echo "User: "
+echo "User: ";
 id
 echo "--------------------------------------------------------"
 echo "OS: "
