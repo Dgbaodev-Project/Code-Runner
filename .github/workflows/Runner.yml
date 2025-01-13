@@ -58,78 +58,78 @@ jobs:
           echo "--------------------------------------------"
           echo "Main/ID"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" main id
+          dgb-reader main id
           echo
           echo "--------------------------------------------"
           echo "Init/APT/Repository"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository
+          dgb-reader init apt repository
           echo
           echo "KEY 0"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository 0
+          dgb-reader init apt repository 0
           echo
           echo "KEY 1"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt repository 1
+          dgb-reader init apt repository 1
           echo
           echo "--------------------------------------------"
           echo "Init/APT/Packages"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init apt packages
+          dgb-reader init apt packages
           echo
           echo "--------------------------------------------"
           echo "Init/RClone/Host"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone host
+          dgb-reader init rclone host
           echo
           echo "--------------------------------------------"
           echo "Init/RClone/Main"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone main
+          dgb-reader init rclone main
           echo
           echo "--------------------------------------------"
           echo "Init/RClone/Packages"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone packages
+          dgb-reader init rclone packages
           echo
           echo "--------------------------------------------"
           echo "Init/RClone/Backup"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" init rclone backup
+          dgb-reader init rclone backup
           echo
           echo "--------------------------------------------"
           echo "Return/Callback/HTTPS"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback https
+          dgb-reader return callback https
           echo
           echo "--------------------------------------------"
           echo "Return/Callback/WS"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback ws
+          dgb-reader return callback ws
           echo
           echo "--------------------------------------------"
           echo "Return/Callback/Auth"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" return callback auth
+          dgb-reader return callback auth
           echo
           echo "--------------------------------------------"
           echo "Runner/Script/Init"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script init
+          dgb-reader runner script init
           echo
           echo "--------------------------------------------"
           echo "Runner/Script/Script"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script script
+          dgb-reader runner script script
           echo
           echo "--------------------------------------------"
           echo "Runner/Script/Args"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script args
+          dgb-reader runner script args
           echo
           echo "--------------------------------------------"
           echo "Runner/Script/Program"
           echo
-          dgb-reader "$GITHUB_WORKSPACE/storage/config.dgb" runner script program
+          dgb-reader runner script program
           echo
