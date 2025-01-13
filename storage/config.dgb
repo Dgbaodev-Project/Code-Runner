@@ -4,8 +4,8 @@ cloudflared.cert=drive-nhatgg81:private/cert.pem
 cloudflared.config=drive-nhatgg81:private/config.yml
 cloudflared.tunnel=drive-nhatgg81:private/tunnel.json
 
-init.apt.repository=ppa:deadsnakes/ppa; ppa:ondrej/php
-init.apt.packages=python3.13; php8.3
+init.apt.repository=
+init.apt.packages=
 
 return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
 return.callback.ws=https://dgbaodev.freesites.eu.org/callback.ws.php
@@ -13,7 +13,7 @@ return.callback.auth=host:auth/callback-auth.dgb
 
 runner.script.init=drive-nhatgg81:private/init_test.sh
 runner.script.init_log=drive-nhatgg81:log/TEST-JOB-11010101_init.log
-runner.script.script=
+runner.script.script=drive-nhatgg81:private/init_test.sh
 runner.script.command=
 
 debug.log=drive-nhatgg81:log/
