@@ -64,7 +64,7 @@ jobs:
 
           echo "Rename hostname"
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ws-dgbaodev-$(dgb-reader main id).freesites.eu.org|g" /root/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
-
+          sudo cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(dgb-reader main id).freesites.eu.org"
           echo "Run"
           sudo cloudflared tunnel run websocket-dgbaodev > /output/cloudflared.log 2>&1 &
           pid_x=$!
@@ -98,12 +98,19 @@ jobs:
             sudo add-apt-repository $i
           done
           for i in $(dgb-reader init apt packages); do
-            sudo apt install $i
+            sudo apt install $i -y
           done
-          timeout 10s sudo -u runner_clone rclone config
           rclone copyto "$(dgb-reader runner script init)" /runner/init.sh || { echo "Failed to copy init.sh"; exit 1; }
-
-
+          sudo chown runner_clone:docker /runner/init.sh
+          sudo chmod 775 /runner/init.sh
+          rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
+          sudo chown runner_clone:docker /runner/script
+          sudo chmod 775 /runner/sctipt
+          sudo -u runner_clone /runner/init.sh > /output/init_log.log 2>&1
+          rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
+      - name: Run Programs With WS
+          run: |
+            echo Pass
 
 
       - name: Kill cloudflared
