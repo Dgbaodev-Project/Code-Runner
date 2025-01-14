@@ -166,7 +166,7 @@ jobs:
           rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
           rclone copyto /output/script.stdout.log "$(dgb-reader runner script log)/stdout.log"
-          rclone copyto /output/script.stderr.log "$(dgb-reader runner script init_log)/stderr.log"
-          rclone copyto /output/ws.log "$(dgb-reader runner script init_log)/ws.log"
+          rclone copyto /output/script.stderr.log "$(dgb-reader runner script log)/stderr.log"
+          rclone copyto /output/ws.log "$(dgb-reader runner script log)/ws.log"
 
 
