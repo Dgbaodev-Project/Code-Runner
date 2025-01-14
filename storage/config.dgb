@@ -14,7 +14,7 @@ return.callback.program=host:auth/ws.js
 runner.script.init=drive-nhatgg81:private/init_test.sh
 runner.script.init_log=host:dgbaodev-test-01/init.log
 runner.script.script=drive-nhatgg81:private/init_test.sh
-runner.script.command=php -a
+runner.script.command=bash /runner/init.sh
 runner.script.log=host:dgbaodev-test-01
 
 debug.log=drive-nhatgg81:log/
