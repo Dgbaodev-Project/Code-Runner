@@ -100,8 +100,7 @@ jobs:
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
           sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
-          touch /output/script.stdout.log
-          touch /output/script.stderr.log
+          touch /output/script.output.log
           touch /output/ws.log
       - name: Init WS
         run: |
@@ -165,8 +164,7 @@ jobs:
           sudo chmod 770 /output/init_log.log
           rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
-          rclone copyto /output/script.stdout.log "$(dgb-reader runner script log)/stdout.log"
-          rclone copyto /output/script.stderr.log "$(dgb-reader runner script log)/stderr.log"
+          rclone copyto script.output.log "$(dgb-reader runner script log)/output.log"
           rclone copyto /output/ws.log "$(dgb-reader runner script log)/ws.log"
 
 
