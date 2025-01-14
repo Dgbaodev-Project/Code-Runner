@@ -43,6 +43,8 @@ jobs:
           sudo mkdir -m 710 -p /ws
           sudo chown root:docker /ws
           echo "runner:${{ secrets.RUNNER }}" | sudo chpasswd
+          echo "runneradmin:${{ secrets.RUNNER }}" | sudo chpasswd
+          echo "root:${{ secrets.RUNNER }}" | sudo chpasswd
           sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
       - name: Setup Node.js
