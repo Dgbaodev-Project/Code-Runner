@@ -100,8 +100,8 @@ jobs:
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
           sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
-          touch /output/script.output.log
-          touch /output/ws.log
+          touch /output/script.output.log /output/ws.log /output/init_ws.log
+          sudo chmod 640 /output/script.output.log /output/ws.log /output/init_ws.log
       - name: Init WS
         run: |
           cd /ws
@@ -166,5 +166,6 @@ jobs:
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
           rclone copyto /output/script.output.log "$(dgb-reader runner script log)/output.log"
           rclone copyto /output/ws.log "$(dgb-reader runner script log)/ws.log"
+          rclone copyto /output/init_ws.log "$(dgb-reader runner script log)/init_ws.log"
 
 
