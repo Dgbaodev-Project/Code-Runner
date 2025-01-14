@@ -164,7 +164,7 @@ jobs:
           sudo chmod 770 /output/init_log.log
           rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
-          rclone copyto script.output.log "$(dgb-reader runner script log)/output.log"
+          rclone copyto /output/script.output.log "$(dgb-reader runner script log)/output.log"
           rclone copyto /output/ws.log "$(dgb-reader runner script log)/ws.log"
 
 
