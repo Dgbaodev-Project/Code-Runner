@@ -100,6 +100,9 @@ jobs:
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
           sudo -u runner_clone bash /runner/init.sh > /output/init_log.log 2>&1
+          touch /output/script.stdout.log
+          touch /output/script.stderr.log
+          touch /output/ws.log
       - name: Init WS
         run: |
           cd /ws
@@ -123,7 +126,7 @@ jobs:
           echo "USERID=$(sudo dgb-reader auth uid)" | sudo tee -a .env > /dev/null
           echo "USERNAME=$(sudo dgb-reader auth username)" | sudo tee -a .env > /dev/null
           echo "ROLE=$(sudo dgb-reader auth role)" | sudo tee -a .env > /dev/null
-          echo "ID=\"$ID\"" | sudo tee -a .env > /dev/null
+          echo "ID=$ID" | sudo tee -a .env > /dev/null
           echo "PORT=9999" | sudo tee -a .env > /dev/null
           echo "COMMAND=\"$COMMAND\"" | sudo tee -a .env > /dev/null
           sudo node ./generate_token.js
@@ -162,5 +165,8 @@ jobs:
           sudo chmod 770 /output/init_log.log
           rclone copyto /output/cloudflared.log "$(dgb-reader debug log)/$(dgb-reader main id)_cloudflared.log"
           rclone copyto /output/init_log.log "$(dgb-reader runner script init_log)"
+          rclone copyto /output/script.stdout.log "$(dgb-reader runner script log)/stdout.log"
+          rclone copyto /output/script.stderr.log "$(dgb-reader runner script init_log)/stderr.log"
+          rclone copyto /output/ws.log "$(dgb-reader runner script init_log)/ws.log"
 
 
