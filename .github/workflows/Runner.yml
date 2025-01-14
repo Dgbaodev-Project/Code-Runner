@@ -40,7 +40,8 @@ jobs:
         continue-on-error: true
         run: |
           sudo mkdir -m 770 -p /input /env /local /output
-          sudo mkdir -m 771 -p /ws
+          sudo mkdir -m 710 -p /ws
+          sudo chown root:docker /ws
           sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
       - name: Setup Node.js
