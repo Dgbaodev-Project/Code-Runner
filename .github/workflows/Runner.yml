@@ -106,7 +106,7 @@ jobs:
         run: |
           cd /ws
           sudo npm init -y
-          sudo npm install ws jsonwebtoken dotenv uuid
+          sudo npm install ws jsonwebtoken dotenv uuid winston
           ID="$(dgb-reader main id)"
           Auth_Callback_Config="$(dgb-reader return callback auth)"
           COMMAND="$(dgb-reader runner script command)"
