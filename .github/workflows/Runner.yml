@@ -111,7 +111,7 @@ jobs:
           CallBack="$(dgb-reader return callback program)"
           rclone copyto "$CallBack" /input/callback.js
           rclone copyto "$Auth_Callback_Config" /output/auth_config.dgb
-          echo "WS=ws://ws-dgbaodev-$(dgb-reader main id).freesites.eu.org" | sudo tee -a /output/auth_config.dgb > /dev/null
+          echo "WS=wss://ws-dgbaodev-$(dgb-reader main id).freesites.eu.org" | sudo tee -a /output/auth_config.dgb > /dev/null
           sudo mv /output/auth_config.dgb ./config.dgb
           sudo mv /input/callback.js ./callback.js
           rclone copyto "$(sudo dgb-reader auth program)" /input/generate_token.js
@@ -123,6 +123,7 @@ jobs:
           echo "USERID=$(sudo dgb-reader auth uid)" | sudo tee -a .env > /dev/null
           echo "USERNAME=$(sudo dgb-reader auth username)" | sudo tee -a .env > /dev/null
           echo "ROLE=$(sudo dgb-reader auth role)" | sudo tee -a .env > /dev/null
+          echo "ID=\"$ID\"" | sudo tee -a .env > /dev/null
           echo "PORT=9999" | sudo tee -a .env > /dev/null
           echo "COMMAND=\"$COMMAND\"" | sudo tee -a .env > /dev/null
           sudo node ./generate_token.js
