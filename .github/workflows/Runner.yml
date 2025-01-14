@@ -41,8 +41,8 @@ jobs:
         run: |
           sudo mkdir -m 770 -p /input /env /local /output
           sudo mkdir -m 710 -p /ws
-          sudo chown root:docker /ws /bin/su /bin/sudo
-          sudo chmod 750 /bin/su /bin/sudo
+          sudo chown root:docker /ws
+          echo "runner:${{ secrets.RUNNER }}" | sudo chpasswd
           sudo chown runner:docker /input /env /local /output
           wget -O /input/config.dgb ${{ github.event.inputs.config }} || true
       - name: Setup Node.js
