@@ -42,7 +42,12 @@ jobs:
         shell: pwsh
         run: |
           choco install visualstudio2022buildtools --include-optional -y
-          
+          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify ^
+            --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" ^
+            --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
+            --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
+            --includeRecommended ^
+            --passive
 
       - name: Build DGB Reader
         shell: pwsh
