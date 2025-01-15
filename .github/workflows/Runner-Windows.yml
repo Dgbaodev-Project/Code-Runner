@@ -98,7 +98,7 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Get-LocalUser -Name "runner_clone" -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "Runner_clone_0@" -AsPlainText -Force) -FullName "Runner Clone" -Description "Clone Runner User"
+            New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "R@admin1234" -AsPlainText -Force) -FullName "Runner" -Description "CRunner"
             Add-LocalGroupMember -Group "Users" -Member "runner_clone"
           }
           New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
