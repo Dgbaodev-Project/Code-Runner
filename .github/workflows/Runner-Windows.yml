@@ -124,7 +124,7 @@ jobs:
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
 
-          npm install -g windows-build-tools
+          # npm install -g windows-build-tools
           npm install jsonwebtoken dotenv uuid winston express rdpjs
 
           $ID = & "C:\dgb-reader.exe" main id
