@@ -104,7 +104,8 @@ jobs:
           rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
           sudo chown runner_clone:docker /runner/script
           sudo chmod 775 /runner/script
-          sudo bash /runner/init.sh > /output/init_log.log 2>&1
+          touch /output/script.output.log
+          sudo bash /root/init.sh > /output/init_log.log 2>&1
           touch /output/script.output.log /output/ws.log /output/init_ws.log
           sudo chmod 640 /output/script.output.log /output/ws.log /output/init_ws.log
       - name: Init WS
