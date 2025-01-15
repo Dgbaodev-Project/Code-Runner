@@ -36,18 +36,11 @@ jobs:
             iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
           choco install cloudflared -y
-          where.exe cloudflared
 
-      - name: Install VS Code
+      - name: Verify cloudflared
         shell: pwsh
         run: |
-          choco install visualstudio2022buildtools --include-optional -y
-          "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe" modify ^
-            --installPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools" ^
-            --add Microsoft.VisualStudio.Workload.ManagedDesktop ^
-            --add Microsoft.VisualStudio.Workload.NetCoreBuildTools ^
-            --includeRecommended ^
-            --passive
+          where.exe cloudflared
 
       - name: Build DGB Reader
         shell: pwsh
