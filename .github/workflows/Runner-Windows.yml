@@ -44,8 +44,6 @@ jobs:
       - name: Build DGB Reader
         shell: pwsh
         run: |
-          # Cài đặt Visual Studio Build Tools nếu chưa có
-          # choco install visualstudio2019buildtools -y
           # Cài đặt g++ qua Chocolatey (mingw)
           choco install mingw -y
           $env:PATH += ";C:\Program Files\mingw64\bin"
@@ -57,17 +55,6 @@ jobs:
         continue-on-error: true
         run: |
           New-Item -ItemType Directory -Path "C:\input","C:\env","C:\local","C:\output","C:\ws" -Force | Out-Null
-          # Thiết lập mật khẩu người dùng
-          # $securePassword = ConvertTo-SecureString "${{ secrets.RUNNER }}" -AsPlainText -Force
-          # Kiểm tra nếu người dùng đã tồn tại
-          # if (-not (Get-LocalUser -Name "runner" -ErrorAction SilentlyContinue)) {
-          #   New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
-          #   Add-LocalGroupMember -Group "Administrators" -Member "runner"
-          # } else {
-          #   # Cập nhật mật khẩu nếu người dùng đã tồn tại
-          #   $user = Get-LocalUser -Name "runner"
-          #   $user | Set-LocalUser -Password $securePassword
-          # }
           # Tải cấu hình
           Invoke-WebRequest -Uri "${{ github.event.inputs.config }}" -OutFile "C:\input\config.dgb" -ErrorAction SilentlyContinue
 
@@ -106,7 +93,12 @@ jobs:
 
           cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Out-Null
 
-          Start-Process -NoNewWindow -FilePath "cloudflared.exe" -ArgumentList "tunnel", "run", "websocket-dgbaodev" -RedirectStandardOutput "C:\output\cloudflared.log" -RedirectStandardError "C:\output\cloudflared.log" -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
+          # Sửa Start-Process để chuyển hướng đầu ra và lỗi đến các tệp khác nhau
+          Start-Process -NoNewWindow -FilePath "cloudflared.exe" `
+                        -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
+                        -RedirectStandardOutput "C:\output\cloudflared_stdout.log" `
+                        -RedirectStandardError "C:\output\cloudflared_stderr.log" `
+                        -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
 
           # Thiết lập quyền cho thư mục
           icacls "C:\Users\runner\.cloudflared" /grant "runner:(F)" /T
@@ -140,7 +132,10 @@ jobs:
           icacls "C:\runner\init.ps1" /grant "runner_clone:(R,W)" 
           rclone copyto "$( & "C:\dgb-reader.exe" runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
-          Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" -RedirectStandardOutput "C:\output\init_log.log" -RedirectStandardError "C:\output\init_log.log"
+          Start-Process -NoNewWindow -FilePath "powershell.exe" `
+                        -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
+                        -RedirectStandardOutput "C:\output\init_log.log" `
+                        -RedirectStandardError "C:\output\init_log.log"
 
           New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
           icacls "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" /grant "runner:(R)" 
@@ -205,9 +200,14 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          icacls "C:\output\cloudflared.log" /grant "runner:(R)"
+          icacls "C:\output\cloudflared_stdout.log" /grant "runner:(R)"
+          icacls "C:\output\cloudflared_stderr.log" /grant "runner:(R)"
           icacls "C:\output\init_log.log" /grant "runner:(R)"
-          rclone copyto "C:\output\cloudflared.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared.log"
+          icacls "C:\output\script.output.log" /grant "runner:(R)"
+          icacls "C:\output\ws.log" /grant "runner:(R)"
+          icacls "C:\output\init_ws.log" /grant "runner:(R)"
+          rclone copyto "C:\output\cloudflared_stdout.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared_stdout.log"
+          rclone copyto "C:\output\cloudflared_stderr.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared_stderr.log"
           rclone copyto "C:\output\init_log.log" "$( & "C:\dgb-reader.exe" runner script init_log )"
           rclone copyto "C:\output\script.output.log" "$( & "C:\dgb-reader.exe" runner script log )\output.log"
           rclone copyto "C:\output\ws.log" "$( & "C:\dgb-reader.exe" runner script log )\ws.log"
