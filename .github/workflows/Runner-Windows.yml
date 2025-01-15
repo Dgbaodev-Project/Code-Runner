@@ -147,7 +147,7 @@ jobs:
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ID=$ID"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "PORT=9999"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=`"$COMMAND`""
-          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js"
+          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js" -Wait
           rclone copyto "C:\Users\runneradmin\ws\config.dgb" "$Auth_Callback_Config"
 
       - name: Run Programs With WS
@@ -156,8 +156,8 @@ jobs:
           Set-Location -Path "C:\Users\runneradmin\ws"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\' -Name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          (Get-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\' -Name "fDenyTSConnections").fDenyTSConnections
-          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js"
+          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js" -Wait
+          
 
       - name: Post Log
         if: always()
