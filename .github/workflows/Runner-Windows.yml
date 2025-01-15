@@ -90,6 +90,7 @@ jobs:
           RUNNER_CLONE_USERNAME: runner_clone
           RUNNER_CLONE_PASSWORD: R@admin1234
         run: |
+          New-Item -ItemType File -Path "C:\Users\runneradmin\output\script.output.log","C:\Users\runneradmin\output\ws.log","C:\Users\runneradmin\output\init_ws.log","C:\Users\runneradmin\output\init_stdout_log.log","C:\Users\runneradmin\output\init_stderr_log.log" -Force | Out-Null
           $RunnerCloneUsername = $env:RUNNER_CLONE_USERNAME
           $RunnerClonePasswd = $env:RUNNER_CLONE_PASSWORD
           if (-not (Get-LocalUser -Name "$RunnerCloneUsername" -ErrorAction SilentlyContinue)) {
@@ -115,16 +116,15 @@ jobs:
           $stdoutPath = "C:\Users\runneradmin\output\init_stdout_log.log"
           $stderrPath = "C:\Users\runneradmin\output\init_stderr_log.log"
 
-          Invoke-Command -ScriptBlock {
+          Invoke-Command -ComputerName "localhost" -Credential $Credential -ScriptBlock {
               try {
                   & "C:\runner\init.ps1" *>&1 | Tee-Object -FilePath $using:stdoutPath
               } catch {
                   $_ | Out-File -FilePath $using:stderrPath -Append
               }
-          } -Credential $Credential
+          }
 
           Write-Output "Init OK"
-          New-Item -ItemType File -Path "C:\Users\runneradmin\output\script.output.log","C:\Users\runneradmin\output\ws.log","C:\Users\runneradmin\output\init_ws.log" -Force | Out-Null
 
       - name: Init WS
         shell: pwsh
