@@ -76,21 +76,9 @@ jobs:
           $cloudflared_tunnel = & "C:\dgb-reader.exe" cloudflared tunnel
           
           New-Item -ItemType Directory -Path "C:\Users\runner\.cloudflared" -Force | Out-Null
-          rclone copyto "$cloudflared_cert" "C:\cert.pem" || { Write-Error "Failed to copy cert.pem"; exit 1 }
-          rclone copyto "$cloudflared_config" "C:\config.yml" || { Write-Error "Failed to copy config.yml"; exit 1 }
-          rclone copyto "$cloudflared_tunnel" "C:\tunnel.json" || { Write-Error "Failed to copy tunnel.json"; exit 1 }
-
-          Move-Item "C:\cert.pem" "C:\Users\runner\.cloudflared\cert.pem"
-          Move-Item "C:\config.yml" "C:\Users\runner\.cloudflared\config.yml"
-          Move-Item "C:\tunnel.json" "C:\Users\runner\.cloudflared\${{ secrets.TUNNEL_ID }}.json"
-
-          Remove-Item -Path "C:\cert.pem","C:\config.yml","C:\tunnel.json" -ErrorAction SilentlyContinue
-
-          # Sửa cú pháp if để tránh lỗi
-          if ( (Test-Path "C:\Users\runner\.cloudflared\cert.pem") -or (Test-Path "C:\Users\runner\.cloudflared\config.yml") -or (Test-Path "C:\Users\runner\.cloudflared\${{ secrets.TUNNEL_ID }}.json") ) {
-            Write-Error "Temporary files were not removed"
-            exit 1
-          }
+          rclone copyto "$cloudflared_cert" "C:\Users\runner\.cloudflared\cert.pem" || { Write-Error "Failed to copy cert.pem"; exit 1 }
+          rclone copyto "$cloudflared_config" "C:\Users\runner\.cloudflared\config.yml" || { Write-Error "Failed to copy config.yml"; exit 1 }
+          rclone copyto "$cloudflared_tunnel" "C:\Users\runner\.cloudflared\${{ secrets.TUNNEL_ID }}.json" || { Write-Error "Failed to copy tunnel.json"; exit 1 }
 
           Write-Output "Rename hostname"
           (Get-Content "C:\Users\runner\.cloudflared\config.yml") -replace "test12341234\.freesites\.eu\.org", "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Set-Content "C:\Users\runner\.cloudflared\config.yml"
