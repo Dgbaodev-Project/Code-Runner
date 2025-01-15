@@ -82,7 +82,6 @@ jobs:
                         -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
                         -RedirectStandardOutput "C:\Users\runneradmin\output\cloudflared_stdout.log" `
                         -RedirectStandardError "C:\Users\runneradmin\output\cloudflared_stderr.log" `
-                        -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\Users\runneradmin\cloudflared.pid"
 
       - name: Init Programs
         timeout-minutes: 10
@@ -112,7 +111,7 @@ jobs:
           rclone copyto "$( & "C:\dgb-reader.exe" runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
-                        -Credential $credential `
+                        -Credential "$credential" `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
                         -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
                         -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
@@ -163,20 +162,6 @@ jobs:
           }
           Set-Location -Path "C:\Users\runneradmin\ws"
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js"
-
-      - name: Kill cloudflared
-        if: always()
-        shell: pwsh
-        run: |
-          if (Test-Path "C:\Users\runneradmin\cloudflared.pid") {
-            Stop-Process -Id (Get-Content "C:\Users\runneradmin\cloudflared.pid") -Force
-            Write-Output "Cloudflared stopped successfully"
-            Remove-Item -Path "C:\Users\runneradmin\cloudflared.pid"
-            Remove-Item -Path "C:\Users\runneradmin\.cloudflared" -Recurse -Force
-          }
-          else {
-            Write-Output "No PID file found."
-          }
 
       - name: Post Log
         if: always()
