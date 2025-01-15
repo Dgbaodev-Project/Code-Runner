@@ -154,6 +154,9 @@ jobs:
         shell: pwsh
         run: |
           Set-Location -Path "C:\Users\runneradmin\ws"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\' -Name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          (Get-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\' -Name "fDenyTSConnections").fDenyTSConnections
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js"
 
       - name: Post Log
