@@ -84,29 +84,35 @@ jobs:
                         -RedirectStandardError "C:\Users\runneradmin\output\cloudflared_stderr.log" `
                         -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\Users\runneradmin\cloudflared.pid"
 
-      - name: Create user - runner_clone
-        shell: pwsh
-        run: |
-          if (-not (Get-LocalUser -Name "runner_clone" -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "R@admin1234" -AsPlainText -Force) -FullName "Runner" -Description "CRunner"
-            Add-LocalGroupMember -Group "Users" -Member "runner_clone"
-          }
-          New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
-          icacls "C:\runner" /grant "runner_clone:(OI)(CI)F" /T
-
       - name: Init Programs
         timeout-minutes: 10
         shell: pwsh
+        env:
+          RUNNER_CLONE_USERNAME: runner_clone
+          RUNNER_CLONE_PASSWORD: R@admin1234
         run: |
+          $RunnerCloneUsername = $env:RUNNER_CLONE_USERNAME
+          $RunnerClonePasswd = $env:RUNNER_CLONE_PASSWORD
+          if (-not (Get-LocalUser -Name "$RunnerCloneUsername" -ErrorAction SilentlyContinue)) {
+            New-LocalUser -Name $RunnerCloneUsername -Password (ConvertTo-SecureString "$RunnerClonePasswd" -AsPlainText -Force) -FullName "Runner" -Description "CRunner"
+            Add-LocalGroupMember -Group "Users" -Member $RunnerCloneUsername
+          }
+          New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
+          icacls "C:\runner" /grant "$RunnerCloneUsername:(OI)(CI)F" /T
+
           Set-Location -Path "C:\runner"
           foreach ($pkg in (& "C:\dgb-reader.exe" init choco packages)) {
             choco install $pkg -y
           }
+          $securePassword = ConvertTo-SecureString "$RunnerClonePasswd" -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential ($RunnerCloneUsername, $securePassword)
+
           rclone copyto "$( & "C:\dgb-reader.exe" runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
           icacls "C:\runner\init.ps1" /grant "runner_clone:(R,W)" 
           rclone copyto "$( & "C:\dgb-reader.exe" runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
+                        -Credential $credential `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
                         -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
                         -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
@@ -117,6 +123,10 @@ jobs:
         shell: pwsh
         run: |
           Set-Location -Path "C:\Users\runneradmin\ws"
+          $packageJsonPath = "C:\Users\runneradmin\ws\package.json"
+          $package = Get-Content $packageJsonPath -Raw | ConvertFrom-Json
+          $package.name = "dgbaodev-windows-ws"
+          $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
           npm init -y
           npm install ws jsonwebtoken dotenv uuid winston
 
@@ -139,8 +149,8 @@ jobs:
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "USERNAME=$( & "C:\dgb-reader.exe" auth username )"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ROLE=$( & "C:\dgb-reader.exe" auth role )"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ID=$ID"
-          Add-Content -Path "C:\ws\.env" -Value "PORT=9999"
-          Add-Content -Path "C:\Users\runneradmin\Users\runneradmin\ws\.env" -Value "COMMAND=\"$COMMAND\""
+          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "PORT=9999"
+          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=\"$COMMAND\""
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js"
           rclone copyto "C:\Users\runneradmin\ws\config.dgb" "$Auth_Callback_Config"
 
