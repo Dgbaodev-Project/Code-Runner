@@ -83,8 +83,7 @@ jobs:
           Write-Output "Rename hostname"
           (Get-Content "C:\Users\runner\.cloudflared\config.yml") -replace "test12341234\.freesites\.eu\.org", "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Set-Content "C:\Users\runner\.cloudflared\config.yml"
 
-          # Thêm origincert vào config.yml
-          Add-Content -Path "C:\Users\runner\.cloudflared\config.yml" -Value "`norigincert: C:\Users\runner\.cloudflared\cert.pem"
+          $env:TUNNEL_ORIGIN_CERT = "C:\Users\runner\.cloudflared\cert.pem"
 
           cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Out-Null
 
