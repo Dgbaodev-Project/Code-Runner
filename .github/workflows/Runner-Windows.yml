@@ -120,8 +120,8 @@ jobs:
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
-                        -RedirectStandardOutput "C:\output\init_stdout_log.log" `
-                        -RedirectStandardError "C:\output\init_stderr_log.log"
+                        # -RedirectStandardOutput "C:\output\init_stdout_log.log" `
+                        # -RedirectStandardError "C:\output\init_stderr_log.log"
 
           New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
 
