@@ -110,12 +110,8 @@ jobs:
         run: |
           Set-Location -Path "C:\runner"
           foreach ($repo in (& "C:\dgb-reader.exe" init choco repository)) {
-            # Thêm repository tương ứng cho Windows nếu cần
-            # Có thể bỏ qua bước này nếu không áp dụng
           }
           foreach ($pkg in (& "C:\dgb-reader.exe" init choco packages)) {
-            # Cài đặt các gói phần mềm tương ứng trên Windows
-            # Sử dụng Chocolatey hoặc các trình cài đặt khác
             choco install $pkg -y
           }
           rclone copyto "$( & "C:\dgb-reader.exe" runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
@@ -124,8 +120,8 @@ jobs:
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
-                        -RedirectStandardOutput "C:\output\init_log.log" `
-                        -RedirectStandardError "C:\output\init_log.log"
+                        -RedirectStandardOutput "C:\output\init_stdout_log.log" `
+                        -RedirectStandardError "C:\output\init_stdin_log.log"
 
           New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
           icacls "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" /grant "runner:(R)" 
