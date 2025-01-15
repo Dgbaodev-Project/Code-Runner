@@ -1,7 +1,7 @@
 main.id=win-dgbaodev-test-01
 
 cloudflared.cert=drive-nhatgg81:private/cert.pem
-cloudflared.config=drive-nhatgg81:private/config.yml
+cloudflared.config=drive-nhatgg81:private/win-config.yml
 cloudflared.tunnel=drive-nhatgg81:private/tunnel.json
 
 init.choco.repository=
