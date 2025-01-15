@@ -1,4 +1,4 @@
-name: Runner
+name: Runner Ubuntu
 
 on:
   workflow_dispatch:

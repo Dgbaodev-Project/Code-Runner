@@ -1,0 +1,200 @@
+name: Runner Windows
+
+on:
+  workflow_dispatch:
+    inputs:
+      OS:
+        description: "Operating System"
+        type: choice
+        options:
+          - windows-latest
+          - windows-2022
+        required: true
+      config:
+        description: "Config BASE64"
+        required: true
+
+jobs:
+  run-script:
+    runs-on: ${{ github.event.inputs.OS }}
+    name: "Runner Script (${{ github.event.inputs.OS }})"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+
+      - name: Install cloudflared
+        timeout-minutes: 3
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi" -OutFile "C:\cloudflared.msi"
+          Start-Process msiexec.exe -ArgumentList '/i C:\cloudflared.msi /quiet' -NoNewWindow -Wait
+          cloudflared --version
+
+      - name: Build DGB Reader
+        shell: pwsh
+        run: |
+          # Cài đặt Visual Studio Build Tools nếu chưa có
+          choco install visualstudio2019buildtools -y
+          # Cài đặt g++
+          choco install mingw -y
+          $env:PATH += ";C:\Program Files\mingw-w64\mingw64\bin"
+          g++ -o C:\dgb-reader.exe "$env:GITHUB_WORKSPACE\storage\dgb-reader.cpp"
+
+      - name: Init
+        id: init
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          New-Item -ItemType Directory -Path "C:\input","C:\env","C:\local","C:\output","C:\ws" -Force | Out-Null
+          # Thiết lập quyền tương tự
+          # Windows quản lý quyền khác với Linux, cần điều chỉnh theo yêu cầu
+          # Thiết lập mật khẩu người dùng
+          $securePassword = ConvertTo-SecureString "${{ secrets.RUNNER }}" -AsPlainText -Force
+          New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
+          Add-LocalGroupMember -Group "Administrators" -Member "runner"
+          # Tải cấu hình
+          Invoke-WebRequest -Uri "${{ github.event.inputs.config }}" -OutFile "C:\input\config.dgb" -ErrorAction SilentlyContinue
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Setup cloudflared
+        shell: pwsh
+        run: |
+          Write-Output "Get Files"
+          $cloudflared_cert = & C:\dgb-reader.exe cloudflared cert
+          $cloudflared_config = & C:\dgb-reader.exe cloudflared config
+          $cloudflared_tunnel = & C:\dgb-reader.exe cloudflared tunnel
+          
+          New-Item -ItemType Directory -Path "C:\Users\runner\.cloudflared" -Force | Out-Null
+          rclone copyto "$cloudflared_cert" "C:\cert.pem" || { Write-Error "Failed to copy cert.pem"; exit 1 }
+          rclone copyto "$cloudflared_config" "C:\config.yml" || { Write-Error "Failed to copy config.yml"; exit 1 }
+          rclone copyto "$cloudflared_tunnel" "C:\tunnel.json" || { Write-Error "Failed to copy tunnel.json"; exit 1 }
+
+          Move-Item "C:\cert.pem" "C:\Users\runner\.cloudflared\cert.pem"
+          Move-Item "C:\config.yml" "C:\Users\runner\.cloudflared\config.yml"
+          Move-Item "C:\tunnel.json" "C:\Users\runner\.cloudflared\${{ secrets.TUNNEL_ID }}.json"
+
+          Remove-Item -Path "C:\cert.pem","C:\config.yml","C:\tunnel.json" -ErrorAction SilentlyContinue
+
+          if (Test-Path "C:\cert.pem" -or Test-Path "C:\config.yml" -or Test-Path "C:\tunnel.json") {
+            Write-Error "Temporary files were not removed"
+            exit 1
+          }
+
+          Write-Output "Rename hostname"
+          (Get-Content "C:\Users\runner\.cloudflared\config.yml") -replace "test12341234\.freesites\.eu\.org", "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Set-Content "C:\Users\runner\.cloudflared\config.yml"
+
+          cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Out-Null
+
+          Start-Process -NoNewWindow -FilePath "cloudflared.exe" -ArgumentList "tunnel", "run", "websocket-dgbaodev" -RedirectStandardOutput "C:\output\cloudflared.log" -RedirectStandardError "C:\output\cloudflared.log" -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
+
+          # Thiết lập quyền cho thư mục
+          icacls "C:\Users\runner\.cloudflared" /grant "runner:(F)" /T
+          icacls "C:\cloudflared.pid" /grant "runner:(R)" 
+
+      - name: Create user - runner_clone
+        shell: pwsh
+        run: |
+          New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "Runner_clone_0@" -AsPlainText -Force) -FullName "Runner Clone" -Description "Clone Runner User"
+          Add-LocalGroupMember -Group "Users" -Member "runner_clone"
+          New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
+          icacls "C:\runner" /grant "runner_clone:(OI)(CI)F" /T
+
+      - name: Init Programs
+        timeout-minutes: 10
+        shell: pwsh
+        run: |
+          Set-Location -Path "C:\runner"
+          foreach ($repo in (& C:\dgb-reader.exe init apt repository)) {
+            # Thêm repository tương ứng cho Windows nếu cần
+            # Có thể bỏ qua bước này nếu không áp dụng
+          }
+          foreach ($pkg in (& C:\dgb-reader.exe init apt packages)) {
+            # Cài đặt các gói phần mềm tương ứng trên Windows
+            # Sử dụng Chocolatey hoặc các trình cài đặt khác
+            choco install $pkg -y
+          }
+          rclone copyto "$( & C:\dgb-reader.exe runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
+          icacls "C:\runner\init.ps1" /grant "runner_clone:(R,W)" 
+          rclone copyto "$( & C:\dgb-reader.exe runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
+          icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
+          Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" -RedirectStandardOutput "C:\output\init_log.log" -RedirectStandardError "C:\output\init_log.log"
+
+          New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
+          icacls "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" /grant "runner:(R)" 
+
+      - name: Init WS
+        shell: pwsh
+        run: |
+          Set-Location -Path "C:\ws"
+          npm init -y
+          npm install ws jsonwebtoken dotenv uuid winston node-pty
+          $ID = & C:\dgb-reader.exe main id
+          $Auth_Callback_Config = & C:\dgb-reader.exe return callback auth
+          $COMMAND = & C:\dgb-reader.exe runner script command
+          $CallBack = & C:\dgb-reader.exe return callback program
+          rclone copyto "$CallBack" "C:\input\callback.js"
+          rclone copyto "$Auth_Callback_Config" "C:\output\auth_config.dgb"
+          Add-Content -Path "C:\output\auth_config.dgb" -Value "WS=wss://ws-dgbaodev-$ID.freesites.eu.org"
+          Move-Item "C:\output\auth_config.dgb" "C:\ws\config.dgb"
+          Move-Item "C:\input\callback.js" "C:\ws\callback.js"
+          rclone copyto "$(sudo & C:\dgb-reader.exe auth program)" "C:\input\generate_token.js"
+          Move-Item "C:\input\generate_token.js" "C:\ws\generate_token.js"
+          icacls "C:\ws\config.dgb","C:\ws\generate_token.js","C:\ws\callback.js" /grant "runner:(R)"
+          New-Item -ItemType File -Path "C:\ws\.env" -Force | Out-Null
+          Add-Content -Path "C:\ws\.env" -Value "JWT_SECRET=$(sudo & C:\dgb-reader.exe auth secret)"
+          Add-Content -Path "C:\ws\.env" -Value "USERID=$(sudo & C:\dgb-reader.exe auth uid)"
+          Add-Content -Path "C:\ws\.env" -Value "USERNAME=$(sudo & C:\dgb-reader.exe auth username)"
+          Add-Content -Path "C:\ws\.env" -Value "ROLE=$(sudo & C:\dgb-reader.exe auth role)"
+          Add-Content -Path "C:\ws\.env" -Value "ID=$ID"
+          Add-Content -Path "C:\ws\.env" -Value "PORT=9999"
+          Add-Content -Path "C:\ws\.env" -Value "COMMAND=\"$COMMAND\""
+          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\ws\generate_token.js"
+          Copy-Item -Path "C:\ws\config.dgb" -Destination "C:\output\auth_config.dgb"
+          icacls "C:\output\auth_config.dgb" /grant "runner:(M)"
+          rclone copyto "C:\output\auth_config.dgb" "$Auth_Callback_Config"
+          Remove-Item -Path "C:\output\auth_config.dgb" -ErrorAction SilentlyContinue
+
+      - name: Run Programs With WS
+        shell: pwsh
+        run: |
+          if (!(Get-Process -Id (Get-Content "C:\cloudflared.pid") -ErrorAction SilentlyContinue)) {
+            Write-Error "Cloudflared tunnel failed to start"
+            exit 1
+          }
+          Set-Location -Path "C:\ws"
+          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\ws\callback.js"
+
+      - name: Kill cloudflared
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path "C:\cloudflared.pid") {
+            Stop-Process -Id (Get-Content "C:\cloudflared.pid") -Force
+            Write-Output "Cloudflared stopped successfully"
+            Remove-Item -Path "C:\cloudflared.pid"
+            Remove-Item -Path "C:\Users\runner\.cloudflared" -Recurse -Force
+          }
+          else {
+            Write-Output "No PID file found."
+          }
+
+      - name: Post Log
+        if: always()
+        shell: pwsh
+        run: |
+          icacls "C:\output\cloudflared.log" /grant "runner:(R)"
+          icacls "C:\output\init_log.log" /grant "runner:(R)"
+          rclone copyto "C:\output\cloudflared.log" "$( & C:\dgb-reader.exe debug log )\$( & C:\dgb-reader.exe main id )_cloudflared.log"
+          rclone copyto "C:\output\init_log.log" "$( & C:\dgb-reader.exe runner script init_log )"
+          rclone copyto "C:\output\script.output.log" "$( & C:\dgb-reader.exe runner script log )\output.log"
+          rclone copyto "C:\output\ws.log" "$( & C:\dgb-reader.exe runner script log )\ws.log"
+          rclone copyto "C:\output\init_ws.log" "$( & C:\dgb-reader.exe runner script log )\init_ws.log"
