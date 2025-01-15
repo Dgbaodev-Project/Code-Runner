@@ -4,7 +4,6 @@ cloudflared.cert=drive-nhatgg81:private/cert.pem
 cloudflared.config=drive-nhatgg81:private/win-config.yml
 cloudflared.tunnel=drive-nhatgg81:private/tunnel.json
 
-init.choco.repository=
 init.choco.packages=
 
 return.callback.https=https://dgbaodev.freesites.eu.org/callback.php
@@ -12,7 +11,8 @@ return.callback.auth=host:auth/callback-auth-win-dgbaodev-test-01.dgb
 return.callback.program=host:auth/ws.js
 
 runner.script.init=drive-nhatgg81:private/init_test.ps1
-runner.script.init_log=host:win-dgbaodev-test-01/init.log
+runner.script.init_stdout_log=host:win-dgbaodev-test-01/init_stdout.log
+runner.script.init_stderr_log=host:win-dgbaodev-test-01/init_stderr.log
 runner.script.script=drive-nhatgg81:private/init_test.ps1
 runner.script.command=
 runner.script.log=host:win-dgbaodev-test-01

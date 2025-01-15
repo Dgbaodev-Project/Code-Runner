@@ -146,7 +146,6 @@
 using namespace std;
 namespace fs = std::filesystem;
 
-// Hàm tách chuỗi theo ký tự phân cách
 vector<string> split(const string& s, char delimiter) {
     vector<string> tokens;
     string token;
@@ -164,13 +163,11 @@ vector<string> split(const string& s, char delimiter) {
     return tokens;
 }
 
-// Hàm kiểm tra chuỗi có phải là số hay không
 bool isNumber(const string& s) {
     if(s.empty()) return false;
     return all_of(s.begin(), s.end(), ::isdigit);
 }
 
-// Hàm loại bỏ khoảng trắng ở đầu và cuối chuỗi
 string trim(const string& s) {
     size_t start = s.find_first_not_of(" \t\r\n");
     size_t end = s.find_last_not_of(" \t\r\n");
@@ -185,21 +182,18 @@ int main(int argc, char* argv[]) {
         args.emplace_back(argv[i]);
     }
 
-    // Sử dụng std::filesystem để xác định đường dẫn tệp cấu hình
     fs::path currentDir = fs::current_path();
     fs::path cFilePath = currentDir / "config.dgb";
 
-    // Đường dẫn mặc định trên Windows và Unix-like
     fs::path configFilePath;
     #ifdef _WIN32
-        configFilePath = fs::path("C:/input/config.dgb");
+        configFilePath = fs::path("C:/Users/runneradmin/input/config.dgb");
     #else
         configFilePath = fs::path("/input/config.dgb");
     #endif
 
     ifstream configFile;
 
-    // Cố gắng mở tệp cấu hình từ đường dẫn hiện tại
     configFile.open(cFilePath);
     if(!configFile.is_open()) {
         configFile.close();
@@ -213,7 +207,6 @@ int main(int argc, char* argv[]) {
     map<string, vector<string>> configMap;
     string line;
     while(getline(configFile, line)) {
-        // Xử lý kết thúc dòng Windows (CRLF)
         if(!line.empty() && line.back() == '\r') {
             line.pop_back();
         }
@@ -252,7 +245,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Tạo keyPath từ các đối số
     string keyPath;
     for(size_t i = 0; i < args.size(); ++i) {
         keyPath += args[i];
