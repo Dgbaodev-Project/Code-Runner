@@ -118,11 +118,11 @@ jobs:
         shell: pwsh
         run: |
           Set-Location -Path "C:\Users\runneradmin\ws"
+          npm init -y
           $packageJsonPath = "C:\Users\runneradmin\ws\package.json"
           $package = Get-Content $packageJsonPath -Raw | ConvertFrom-Json
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
-          npm init -y
           npm install ws jsonwebtoken dotenv uuid winston
 
           $ID = & "C:\dgb-reader.exe" main id
