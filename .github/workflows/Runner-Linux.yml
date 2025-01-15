@@ -97,7 +97,8 @@ jobs:
           for i in $(dgb-reader init apt packages); do
             sudo apt install $i -y
           done
-          rclone copyto "$(dgb-reader runner script init)" /root/init.sh || { echo "Failed to copy init.sh"; exit 1; }
+          rclone copyto "$(dgb-reader runner script init)" /input/init.sh || { echo "Failed to copy init.sh"; exit 1; }
+          sudo mv /input/init.sh /root/init.sh
           sudo chown root:docker /root/init.sh
           sudo chmod 750 /root/init.sh
           rclone copyto "$(dgb-reader runner script script)" /runner/script || { echo "Failed to copy script"; exit 1; }
