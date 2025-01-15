@@ -145,7 +145,7 @@ jobs:
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ROLE=$( & "C:\dgb-reader.exe" auth role )"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ID=$ID"
           Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "PORT=9999"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=\"$COMMAND\""
+          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=`"$COMMAND`""
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js"
           rclone copyto "C:\Users\runneradmin\ws\config.dgb" "$Auth_Callback_Config"
 
