@@ -112,11 +112,17 @@ jobs:
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           
           Write-Output "Run Init"
-          Start-Process -NoNewWindow -FilePath "powershell.exe" `
-                        -Credential "$credential" `
-                        -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
-                        # -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
-                        # -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
+          $stdoutPath = "C:\Users\runneradmin\output\init_stdout_log.log"
+          $stderrPath = "C:\Users\runneradmin\output\init_stderr_log.log"
+
+          Invoke-Command -ScriptBlock {
+              try {
+                  & "C:\runner\init.ps1" *>&1 | Tee-Object -FilePath $using:stdoutPath
+              } catch {
+                  $_ | Out-File -FilePath $using:stderrPath -Append
+              }
+          } -Credential $Credential
+
           Write-Output "Init OK"
           New-Item -ItemType File -Path "C:\Users\runneradmin\output\script.output.log","C:\Users\runneradmin\output\ws.log","C:\Users\runneradmin\output\init_ws.log" -Force | Out-Null
 
