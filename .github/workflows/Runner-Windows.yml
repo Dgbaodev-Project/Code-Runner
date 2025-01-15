@@ -90,9 +90,10 @@ jobs:
           # Sửa Start-Process để chuyển hướng đầu ra và lỗi đến các tệp khác nhau
           Start-Process -NoNewWindow -FilePath "cloudflared.exe" `
                         -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
-                        -RedirectStandardOutput "C:\output\cloudflared_stdout.log" `
-                        -RedirectStandardError "C:\output\cloudflared_stderr.log" `
-                        -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
+                        # -RedirectStandardOutput "C:\output\cloudflared_stdout.log" `
+                        # -RedirectStandardError "C:\output\cloudflared_stderr.log" `
+                        # -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
+
 
           # Thiết lập quyền cho thư mục
           icacls "C:\Users\runner\.cloudflared" /grant "runner:(F)" /T
