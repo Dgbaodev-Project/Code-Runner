@@ -1,4 +1,4 @@
-main.id=dgbaodev-test-01
+main.id=dgbaodev-ubuntu-D0752150125
 
 cloudflared.cert=drive-nhatgg81:private/cert.pem
 cloudflared.config=drive-nhatgg81:private/config.yml
