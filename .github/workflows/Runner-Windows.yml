@@ -36,18 +36,11 @@ jobs:
             iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
           choco install cloudflared -y
-          where.exe cloudflared
 
-      - name: Install TightVNC Server
-        run: |
-          choco install tightvnc --params "/password:R@admin1234 /controlpassword:R@admin1234" -y
-
-      - name: Configure TightVNC Server
+      - name: Verify cloudflared
         shell: pwsh
         run: |
-          $vncPassword = "R@admin1234"
-          $securePassword = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($vncPassword))
-          Set-ItemProperty -Path "HKLM:\SOFTWARE\TightVNC\Server" -Name "Password" -Value $securePassword
+          where.exe cloudflared
 
       - name: Build DGB Reader
         shell: pwsh
@@ -102,6 +95,7 @@ jobs:
           }
           New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
           icacls "C:\runner" /grant "${RunnerCloneUsername}:(OI)(CI)F" /T
+
           Set-Location -Path "C:\runner"
           foreach ($pkg in (& "C:\dgb-reader.exe" init choco packages)) {
             choco install $pkg -y
@@ -154,52 +148,11 @@ jobs:
 
       - name: Run Programs With WS
         shell: pwsh
-        env:
-            PASSWORD: R@admin1234
         run: |
           Set-Location -Path "C:\Users\runneradmin\ws"
-          Start-Service -Name "TightVNC"
-          Get-Service -Name "TightVNC"
-          # runas /user:runner_clone "start tightvncserver -start"
-          pip install websockify
-          $noVNCVersion = "v1.5.0"  # Thay đổi phiên bản nếu cần
-          $noVNCUrl = "https://github.com/novnc/noVNC/archive/refs/tags/$noVNCVersion.zip"
-          $noVNCZip = "$env:USERPROFILE\Downloads\noVNC-$noVNCVersion.zip"
-          $noVNCFolder = "C:\noVNC"
-
-          # Tải xuống noVNC
-          Invoke-WebRequest -Uri $noVNCUrl -OutFile $noVNCZip
-
-          # Tải xuống websockify (nếu không được cài đặt qua pip trước đó)
-          # Giả sử đã cài đặt qua pip ở bước trước
-
-          # Giải nén noVNC
-          Expand-Archive -Path $noVNCZip -DestinationPath "C:\noVNC" -Force
-
-          # Di chuyển nội dung từ thư mục con vào C:\noVNC
-          Move-Item "C:\noVNC\noVNC-$noVNCVersion\*" "C:\noVNC" -Recurse -Force
-
-          # Xóa thư mục con và file zip
-          Remove-Item "C:\noVNC\noVNC-$noVNCVersion" -Recurse -Force
-          Remove-Item $noVNCZip -Force
-          # Đường dẫn đến thư mục noVNC
-          $noVNCPath = "C:\noVNC"
-
-          # Cổng websockify sẽ lắng nghe (mặc định 6080)
-          $websockifyPort = 6080
-
-          # Địa chỉ và cổng của VNC server
-          $vncHost = "localhost"
-          $vncPort = 5900
-
-          # Chuyển đến thư mục noVNC
-          Set-Location -Path $noVNCPath
-
-          # Khởi chạy websockify
-          Start-Job -ScriptBlock {
-              Set-Location -Path "C:\noVNC"
-              websockify --web . 6080 localhost:5900
-          }
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
 
           Start-Job -ScriptBlock {
               Start-Process -FilePath "cloudflared.exe" `
