@@ -123,7 +123,8 @@ jobs:
           $package = Get-Content $packageJsonPath -Raw | ConvertFrom-Json
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
-          npm install ws jsonwebtoken dotenv uuid winston
+
+          npm install ws jsonwebtoken dotenv uuid winston robotjs screenshot-desktop node-windows
 
           $ID = & "C:\dgb-reader.exe" main id
           $Auth_Callback_Config = & "C:\dgb-reader.exe" return callback auth
@@ -152,10 +153,6 @@ jobs:
       - name: Run Programs With WS
         shell: pwsh
         run: |
-          if (!(Get-Process -Id (Get-Content "C:\Users\runneradmin\cloudflared.pid") -ErrorAction SilentlyContinue)) {
-            Write-Error "Cloudflared tunnel failed to start"
-            exit 1
-          }
           Set-Location -Path "C:\Users\runneradmin\ws"
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js"
 
