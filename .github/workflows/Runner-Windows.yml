@@ -36,11 +36,13 @@ jobs:
             iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
           }
           choco install cloudflared -y
+          where.exe cloudflared
 
-      - name: Verify cloudflared
+      - name: Install VS Code
         shell: pwsh
         run: |
-          where.exe cloudflared
+          choco install visualstudio2022buildtools --include-optional -y
+          
 
       - name: Build DGB Reader
         shell: pwsh
@@ -124,8 +126,7 @@ jobs:
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
 
-          # npm install -g windows-build-tools
-          npm install jsonwebtoken dotenv uuid winston express rdpjs
+          npm install jsonwebtoken dotenv uuid winston express rdpjs ws
 
           $ID = & "C:\dgb-reader.exe" main id
           $Auth_Callback_Config = & "C:\dgb-reader.exe" return callback auth
