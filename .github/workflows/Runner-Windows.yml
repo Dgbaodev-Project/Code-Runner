@@ -115,8 +115,8 @@ jobs:
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
                         -Credential "$credential" `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
-                        -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
-                        -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
+                        # -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
+                        # -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
           Write-Output "Init OK"
           New-Item -ItemType File -Path "C:\Users\runneradmin\output\script.output.log","C:\Users\runneradmin\output\ws.log","C:\Users\runneradmin\output\init_ws.log" -Force | Out-Null
 
