@@ -27,12 +27,18 @@ jobs:
         with:
           rclone_config: ${{ secrets.RCLONE_CONFIG }}
 
-      - name: Install cloudflared
-        timeout-minutes: 3
+      - name: Install cloudflared via Chocolatey
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.msi" -OutFile "C:\cloudflared.msi"
-          Start-Process msiexec.exe -ArgumentList '/i C:\cloudflared.msi /quiet' -NoNewWindow -Wait
+          # Cài đặt Chocolatey nếu chưa có
+          if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+            Set-ExecutionPolicy Bypass -Scope Process -Force
+            [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+            iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+          }
+          # Cài đặt cloudflared
+          choco install cloudflared -y
+          # Kiểm tra phiên bản
           cloudflared --version
 
       - name: Build DGB Reader
@@ -40,10 +46,10 @@ jobs:
         run: |
           # Cài đặt Visual Studio Build Tools nếu chưa có
           choco install visualstudio2019buildtools -y
-          # Cài đặt g++
+          # Cài đặt g++ qua Chocolatey (mingw)
           choco install mingw -y
-          $env:PATH += ";C:\Program Files\mingw-w64\mingw64\bin"
-          g++ -o C:\dgb-reader.exe "$env:GITHUB_WORKSPACE\storage\dgb-reader.cpp"
+          $env:PATH += ";C:\Program Files\mingw64\bin"
+          g++ -o "C:\dgb-reader.exe" "$env:GITHUB_WORKSPACE\storage\dgb-reader.cpp"
 
       - name: Init
         id: init
@@ -51,12 +57,17 @@ jobs:
         continue-on-error: true
         run: |
           New-Item -ItemType Directory -Path "C:\input","C:\env","C:\local","C:\output","C:\ws" -Force | Out-Null
-          # Thiết lập quyền tương tự
-          # Windows quản lý quyền khác với Linux, cần điều chỉnh theo yêu cầu
           # Thiết lập mật khẩu người dùng
           $securePassword = ConvertTo-SecureString "${{ secrets.RUNNER }}" -AsPlainText -Force
-          New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
-          Add-LocalGroupMember -Group "Administrators" -Member "runner"
+          # Kiểm tra nếu người dùng đã tồn tại
+          if (-not (Get-LocalUser -Name "runner" -ErrorAction SilentlyContinue)) {
+            New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
+            Add-LocalGroupMember -Group "Administrators" -Member "runner"
+          } else {
+            # Cập nhật mật khẩu nếu người dùng đã tồn tại
+            $user = Get-LocalUser -Name "runner"
+            $user | Set-LocalUser -Password $securePassword
+          }
           # Tải cấu hình
           Invoke-WebRequest -Uri "${{ github.event.inputs.config }}" -OutFile "C:\input\config.dgb" -ErrorAction SilentlyContinue
 
@@ -69,9 +80,9 @@ jobs:
         shell: pwsh
         run: |
           Write-Output "Get Files"
-          $cloudflared_cert = & C:\dgb-reader.exe cloudflared cert
-          $cloudflared_config = & C:\dgb-reader.exe cloudflared config
-          $cloudflared_tunnel = & C:\dgb-reader.exe cloudflared tunnel
+          $cloudflared_cert = & "C:\dgb-reader.exe" cloudflared cert
+          $cloudflared_config = & "C:\dgb-reader.exe" cloudflared config
+          $cloudflared_tunnel = & "C:\dgb-reader.exe" cloudflared tunnel
           
           New-Item -ItemType Directory -Path "C:\Users\runner\.cloudflared" -Force | Out-Null
           rclone copyto "$cloudflared_cert" "C:\cert.pem" || { Write-Error "Failed to copy cert.pem"; exit 1 }
@@ -103,8 +114,10 @@ jobs:
       - name: Create user - runner_clone
         shell: pwsh
         run: |
-          New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "Runner_clone_0@" -AsPlainText -Force) -FullName "Runner Clone" -Description "Clone Runner User"
-          Add-LocalGroupMember -Group "Users" -Member "runner_clone"
+          if (-not (Get-LocalUser -Name "runner_clone" -ErrorAction SilentlyContinue)) {
+            New-LocalUser -Name "runner_clone" -Password (ConvertTo-SecureString "Runner_clone_0@" -AsPlainText -Force) -FullName "Runner Clone" -Description "Clone Runner User"
+            Add-LocalGroupMember -Group "Users" -Member "runner_clone"
+          }
           New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
           icacls "C:\runner" /grant "runner_clone:(OI)(CI)F" /T
 
@@ -113,18 +126,18 @@ jobs:
         shell: pwsh
         run: |
           Set-Location -Path "C:\runner"
-          foreach ($repo in (& C:\dgb-reader.exe init apt repository)) {
+          foreach ($repo in (& "C:\dgb-reader.exe" init apt repository)) {
             # Thêm repository tương ứng cho Windows nếu cần
             # Có thể bỏ qua bước này nếu không áp dụng
           }
-          foreach ($pkg in (& C:\dgb-reader.exe init apt packages)) {
+          foreach ($pkg in (& "C:\dgb-reader.exe" init apt packages)) {
             # Cài đặt các gói phần mềm tương ứng trên Windows
             # Sử dụng Chocolatey hoặc các trình cài đặt khác
             choco install $pkg -y
           }
-          rclone copyto "$( & C:\dgb-reader.exe runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
+          rclone copyto "$( & "C:\dgb-reader.exe" runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
           icacls "C:\runner\init.ps1" /grant "runner_clone:(R,W)" 
-          rclone copyto "$( & C:\dgb-reader.exe runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
+          rclone copyto "$( & "C:\dgb-reader.exe" runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           Start-Process -NoNewWindow -FilePath "powershell.exe" -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" -RedirectStandardOutput "C:\output\init_log.log" -RedirectStandardError "C:\output\init_log.log"
 
@@ -137,23 +150,23 @@ jobs:
           Set-Location -Path "C:\ws"
           npm init -y
           npm install ws jsonwebtoken dotenv uuid winston node-pty
-          $ID = & C:\dgb-reader.exe main id
-          $Auth_Callback_Config = & C:\dgb-reader.exe return callback auth
-          $COMMAND = & C:\dgb-reader.exe runner script command
-          $CallBack = & C:\dgb-reader.exe return callback program
+          $ID = & "C:\dgb-reader.exe" main id
+          $Auth_Callback_Config = & "C:\dgb-reader.exe" return callback auth
+          $COMMAND = & "C:\dgb-reader.exe" runner script command
+          $CallBack = & "C:\dgb-reader.exe" return callback program
           rclone copyto "$CallBack" "C:\input\callback.js"
           rclone copyto "$Auth_Callback_Config" "C:\output\auth_config.dgb"
           Add-Content -Path "C:\output\auth_config.dgb" -Value "WS=wss://ws-dgbaodev-$ID.freesites.eu.org"
           Move-Item "C:\output\auth_config.dgb" "C:\ws\config.dgb"
           Move-Item "C:\input\callback.js" "C:\ws\callback.js"
-          rclone copyto "$(sudo & C:\dgb-reader.exe auth program)" "C:\input\generate_token.js"
+          rclone copyto "$( & "C:\dgb-reader.exe" auth program )" "C:\input\generate_token.js"
           Move-Item "C:\input\generate_token.js" "C:\ws\generate_token.js"
           icacls "C:\ws\config.dgb","C:\ws\generate_token.js","C:\ws\callback.js" /grant "runner:(R)"
           New-Item -ItemType File -Path "C:\ws\.env" -Force | Out-Null
-          Add-Content -Path "C:\ws\.env" -Value "JWT_SECRET=$(sudo & C:\dgb-reader.exe auth secret)"
-          Add-Content -Path "C:\ws\.env" -Value "USERID=$(sudo & C:\dgb-reader.exe auth uid)"
-          Add-Content -Path "C:\ws\.env" -Value "USERNAME=$(sudo & C:\dgb-reader.exe auth username)"
-          Add-Content -Path "C:\ws\.env" -Value "ROLE=$(sudo & C:\dgb-reader.exe auth role)"
+          Add-Content -Path "C:\ws\.env" -Value "JWT_SECRET=$( & "C:\dgb-reader.exe" auth secret )"
+          Add-Content -Path "C:\ws\.env" -Value "USERID=$( & "C:\dgb-reader.exe" auth uid )"
+          Add-Content -Path "C:\ws\.env" -Value "USERNAME=$( & "C:\dgb-reader.exe" auth username )"
+          Add-Content -Path "C:\ws\.env" -Value "ROLE=$( & "C:\dgb-reader.exe" auth role )"
           Add-Content -Path "C:\ws\.env" -Value "ID=$ID"
           Add-Content -Path "C:\ws\.env" -Value "PORT=9999"
           Add-Content -Path "C:\ws\.env" -Value "COMMAND=\"$COMMAND\""
@@ -193,8 +206,8 @@ jobs:
         run: |
           icacls "C:\output\cloudflared.log" /grant "runner:(R)"
           icacls "C:\output\init_log.log" /grant "runner:(R)"
-          rclone copyto "C:\output\cloudflared.log" "$( & C:\dgb-reader.exe debug log )\$( & C:\dgb-reader.exe main id )_cloudflared.log"
-          rclone copyto "C:\output\init_log.log" "$( & C:\dgb-reader.exe runner script init_log )"
-          rclone copyto "C:\output\script.output.log" "$( & C:\dgb-reader.exe runner script log )\output.log"
-          rclone copyto "C:\output\ws.log" "$( & C:\dgb-reader.exe runner script log )\ws.log"
-          rclone copyto "C:\output\init_ws.log" "$( & C:\dgb-reader.exe runner script log )\init_ws.log"
+          rclone copyto "C:\output\cloudflared.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared.log"
+          rclone copyto "C:\output\init_log.log" "$( & "C:\dgb-reader.exe" runner script init_log )"
+          rclone copyto "C:\output\script.output.log" "$( & "C:\dgb-reader.exe" runner script log )\output.log"
+          rclone copyto "C:\output\ws.log" "$( & "C:\dgb-reader.exe" runner script log )\ws.log"
+          rclone copyto "C:\output\init_ws.log" "$( & "C:\dgb-reader.exe" runner script log )\init_ws.log"
