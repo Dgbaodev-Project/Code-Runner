@@ -153,7 +153,7 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-
+          Restart-Service -Name "TermService" -Force
           Start-Job -ScriptBlock {
               Start-Process -FilePath "cloudflared.exe" `
                   -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
@@ -161,7 +161,6 @@ jobs:
                   -RedirectStandardError "C:\Users\runneradmin\output\cloudflared_stderr.log" `
                   -WindowStyle Hidden
           }
-          Get-Job
           Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\callback.js" -Wait
           
 
