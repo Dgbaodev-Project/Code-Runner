@@ -124,7 +124,6 @@ jobs:
                         -RedirectStandardError "C:\output\init_stdin_log.log"
 
           New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
-          icacls "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" /grant "runner:(R)" 
 
       - name: Init WS
         shell: pwsh
