@@ -104,27 +104,15 @@ jobs:
           foreach ($pkg in (& "C:\dgb-reader.exe" init choco packages)) {
             choco install $pkg -y
           }
-          $securePassword = ConvertTo-SecureString "$RunnerClonePasswd" -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential ($RunnerCloneUsername, $securePassword)
 
-          rclone copyto "$( & "C:\dgb-reader.exe" runner script init )" "C:\runner\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
-          icacls "C:\runner\init.ps1" /grant "runner_clone:(R,W)" 
+          rclone copyto "$( & "C:\dgb-reader.exe" runner script init )" "C:\Users\runneradmin\init.ps1" || { Write-Error "Failed to copy init.ps1"; exit 1 }
           rclone copyto "$( & "C:\dgb-reader.exe" runner script script )" "C:\runner\script.ps1" || { Write-Error "Failed to copy script.ps1"; exit 1 }
           icacls "C:\runner\script.ps1" /grant "runner_clone:(R,W)" 
           
-          Write-Output "Run Init"
-          $stdoutPath = "C:\Users\runneradmin\output\init_stdout_log.log"
-          $stderrPath = "C:\Users\runneradmin\output\init_stderr_log.log"
-
-          Invoke-Command -ComputerName "localhost" -Credential $Credential -ScriptBlock {
-              try {
-                  & "C:\runner\init.ps1" *>&1 | Tee-Object -FilePath $using:stdoutPath
-              } catch {
-                  $_ | Out-File -FilePath $using:stderrPath -Append
-              }
-          }
-
-          Write-Output "Init OK"
+          Start-Process -NoNewWindow -FilePath "powershell.exe" `
+            -ArgumentList "-ExecutionPolicy Bypass -File C:\Users\runneradmin\init.ps1" `
+            -RedirectStandardOutput "C:\Users\runneradmin\output\init_stdout_log.log" `
+            -RedirectStandardError "C:\Users\runneradmin\output\init_stderr_log.log"
 
       - name: Init WS
         shell: pwsh
