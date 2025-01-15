@@ -89,7 +89,7 @@ jobs:
 
           # Sửa Start-Process để chuyển hướng đầu ra và lỗi đến các tệp khác nhau
           Start-Process -NoNewWindow -FilePath "cloudflared.exe" `
-                        -ArgumentList "tunnel", "run", "websocket-dgbaodev", "--config", "C:\Users\runner\.cloudflared\config.yml" `
+                        -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
                         -RedirectStandardOutput "C:\output\cloudflared_stdout.log" `
                         -RedirectStandardError "C:\output\cloudflared_stderr.log" `
                         -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\Users\runner\cloudflared.pid"
@@ -121,7 +121,7 @@ jobs:
           Start-Process -NoNewWindow -FilePath "powershell.exe" `
                         -ArgumentList "-ExecutionPolicy Bypass -File C:\runner\init.ps1" `
                         -RedirectStandardOutput "C:\output\init_stdout_log.log" `
-                        -RedirectStandardError "C:\output\init_stdin_log.log"
+                        -RedirectStandardError "C:\output\init_stderr_log.log"
 
           New-Item -ItemType File -Path "C:\output\script.output.log","C:\output\ws.log","C:\output\init_ws.log" -Force | Out-Null
 
@@ -185,15 +185,9 @@ jobs:
         if: always()
         shell: pwsh
         run: |
-          icacls "C:\output\cloudflared_stdout.log" /grant "runner:(R)"
-          icacls "C:\output\cloudflared_stderr.log" /grant "runner:(R)"
-          icacls "C:\output\init_log.log" /grant "runner:(R)"
-          icacls "C:\output\script.output.log" /grant "runner:(R)"
-          icacls "C:\output\ws.log" /grant "runner:(R)"
-          icacls "C:\output\init_ws.log" /grant "runner:(R)"
           rclone copyto "C:\output\cloudflared_stdout.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared_stdout.log"
           rclone copyto "C:\output\cloudflared_stderr.log" "$( & "C:\dgb-reader.exe" debug log )\$( & "C:\dgb-reader.exe" main id )_cloudflared_stderr.log"
-          rclone copyto "C:\output\init_log.log" "$( & "C:\dgb-reader.exe" runner script init_log )"
+          rclone copyto "C:\output\init_stdout_log.log" "$( & "C:\dgb-reader.exe" runner script init_log )"
           rclone copyto "C:\output\script.output.log" "$( & "C:\dgb-reader.exe" runner script log )\output.log"
           rclone copyto "C:\output\ws.log" "$( & "C:\dgb-reader.exe" runner script log )\ws.log"
           rclone copyto "C:\output\init_ws.log" "$( & "C:\dgb-reader.exe" runner script log )\init_ws.log"
