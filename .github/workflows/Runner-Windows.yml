@@ -44,10 +44,7 @@ jobs:
       - name: Build DGB Reader
         shell: pwsh
         run: |
-          # Cài đặt Visual Studio Build Tools nếu chưa có
-          choco install visualstudio2019buildtools -y
-          # Cài đặt g++ qua Chocolatey (mingw)
-          choco install mingw -y
+          # choco install mingw -y
           $env:PATH += ";C:\Program Files\mingw64\bin"
           g++ -o "C:\dgb-reader.exe" "$env:GITHUB_WORKSPACE\storage\dgb-reader.cpp"
 
@@ -58,16 +55,16 @@ jobs:
         run: |
           New-Item -ItemType Directory -Path "C:\input","C:\env","C:\local","C:\output","C:\ws" -Force | Out-Null
           # Thiết lập mật khẩu người dùng
-          $securePassword = ConvertTo-SecureString "${{ secrets.RUNNER }}" -AsPlainText -Force
-          # Kiểm tra nếu người dùng đã tồn tại
-          if (-not (Get-LocalUser -Name "runner" -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
-            Add-LocalGroupMember -Group "Administrators" -Member "runner"
-          } else {
-            # Cập nhật mật khẩu nếu người dùng đã tồn tại
-            $user = Get-LocalUser -Name "runner"
-            $user | Set-LocalUser -Password $securePassword
-          }
+          # $securePassword = ConvertTo-SecureString "${{ secrets.RUNNER }}" -AsPlainText -Force
+          # # Kiểm tra nếu người dùng đã tồn tại
+          # if (-not (Get-LocalUser -Name "runner" -ErrorAction SilentlyContinue)) {
+          #   New-LocalUser -Name "runner" -Password $securePassword -FullName "Runner User" -Description "Runner User"
+          #   Add-LocalGroupMember -Group "Administrators" -Member "runner"
+          # } else {
+          #   # Cập nhật mật khẩu nếu người dùng đã tồn tại
+          #   $user = Get-LocalUser -Name "runner"
+          #   $user | Set-LocalUser -Password $securePassword
+          # }
           # Tải cấu hình
           Invoke-WebRequest -Uri "${{ github.event.inputs.config }}" -OutFile "C:\input\config.dgb" -ErrorAction SilentlyContinue
 
