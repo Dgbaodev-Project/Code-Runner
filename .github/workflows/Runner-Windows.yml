@@ -89,15 +89,10 @@ jobs:
 
           # Sửa Start-Process để chuyển hướng đầu ra và lỗi đến các tệp khác nhau
           Start-Process -NoNewWindow -FilePath "cloudflared.exe" `
-                        -ArgumentList "tunnel", "run", "websocket-dgbaodev", "--config", "C:\Users\runneradmin\.cloudflared\config.yml" `
+                        -ArgumentList "tunnel", "run", "websocket-dgbaodev", "--config", "C:\Users\runner\.cloudflared\config.yml" `
                         -RedirectStandardOutput "C:\output\cloudflared_stdout.log" `
                         -RedirectStandardError "C:\output\cloudflared_stderr.log" `
-                        -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\cloudflared.pid"
-
-
-          # Thiết lập quyền cho thư mục
-          icacls "C:\Users\runner\.cloudflared" /grant "runner:(F)" /T
-          icacls "C:\cloudflared.pid" /grant "runner:(R)" 
+                        -PassThru | Select-Object -ExpandProperty Id | Out-File "C:\Users\runner\cloudflared.pid"
 
       - name: Create user - runner_clone
         shell: pwsh
