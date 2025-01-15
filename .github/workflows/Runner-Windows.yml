@@ -98,7 +98,7 @@ jobs:
             Add-LocalGroupMember -Group "Users" -Member $RunnerCloneUsername
           }
           New-Item -ItemType Directory -Path "C:\runner" -Force | Out-Null
-          icacls "C:\runner" /grant "$RunnerCloneUsername:(OI)(CI)F" /T
+          icacls "C:\runner" /grant "${RunnerCloneUsername}:(OI)(CI)F" /T
 
           Set-Location -Path "C:\runner"
           foreach ($pkg in (& "C:\dgb-reader.exe" init choco packages)) {
