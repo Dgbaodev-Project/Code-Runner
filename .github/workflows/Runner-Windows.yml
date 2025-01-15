@@ -50,8 +50,8 @@ jobs:
         shell: pwsh
         run: |
           # Cài đặt g++ qua Chocolatey (mingw)
-          choco install mingw -y
-          $env:PATH += ";C:\Program Files\mingw64\bin"
+          # choco install mingw -y
+          # $env:PATH += ";C:\Program Files\mingw64\bin"
           g++ -o "C:\dgb-reader.exe" "$env:GITHUB_WORKSPACE\storage\dgb-reader.cpp"
 
       - name: Init
