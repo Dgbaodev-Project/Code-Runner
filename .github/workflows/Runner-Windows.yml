@@ -120,7 +120,7 @@ jobs:
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
 
-          npm install jsonwebtoken dotenv uuid winston express rdpjs ws
+          npm install ws jsonwebtoken dotenv uuid winston
 
           $ID = & "C:\dgb-reader.exe" main id
           $Auth_Callback_Config = & "C:\dgb-reader.exe" return callback auth
@@ -133,17 +133,17 @@ jobs:
           Move-Item "C:\Users\runneradmin\output\auth_config.dgb" "C:\Users\runneradmin\ws\config.dgb"
           Move-Item "C:\Users\runneradmin\input\callback.js" "C:\Users\runneradmin\ws\callback.js"
 
-          rclone copyto "$( & "C:\dgb-reader.exe" auth program )" "C:\Users\runneradmin\ws\generate_token.js"
+          # rclone copyto "$( & "C:\dgb-reader.exe" auth program )" "C:\Users\runneradmin\ws\generate_token.js"
 
-          New-Item -ItemType File -Path "C:\Users\runneradmin\ws\.env" -Force | Out-Null
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "JWT_SECRET=$( & "C:\dgb-reader.exe" auth secret )"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "USERID=$( & "C:\dgb-reader.exe" auth uid )"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "USERNAME=$( & "C:\dgb-reader.exe" auth username )"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ROLE=$( & "C:\dgb-reader.exe" auth role )"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ID=$ID"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "PORT=9999"
-          Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=`"$COMMAND`""
-          Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js" -Wait
+          # New-Item -ItemType File -Path "C:\Users\runneradmin\ws\.env" -Force | Out-Null
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "JWT_SECRET=$( & "C:\dgb-reader.exe" auth secret )"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "USERID=$( & "C:\dgb-reader.exe" auth uid )"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "USERNAME=$( & "C:\dgb-reader.exe" auth username )"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ROLE=$( & "C:\dgb-reader.exe" auth role )"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "ID=$ID"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "PORT=9999"
+          # Add-Content -Path "C:\Users\runneradmin\ws\.env" -Value "COMMAND=`"$COMMAND`""
+          # Start-Process -NoNewWindow -FilePath "node.exe" -ArgumentList "C:\Users\runneradmin\ws\generate_token.js" -Wait
           rclone copyto "C:\Users\runneradmin\ws\config.dgb" "$Auth_Callback_Config"
 
       - name: Run Programs With WS
