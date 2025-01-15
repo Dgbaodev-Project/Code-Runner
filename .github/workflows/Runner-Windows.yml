@@ -78,10 +78,14 @@ jobs:
 
           cloudflared tunnel route dns websocket-dgbaodev "ws-dgbaodev-$(& C:\dgb-reader.exe main id).freesites.eu.org" | Out-Null
 
-          Start-Process -NoNewWindow -FilePath "cloudflared.exe" `
-                        -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
-                        -RedirectStandardOutput "C:\Users\runneradmin\output\cloudflared_stdout.log" `
-                        -RedirectStandardError "C:\Users\runneradmin\output\cloudflared_stderr.log" `
+          Start-Job -ScriptBlock {
+              Start-Process -FilePath "cloudflared.exe" `
+                  -ArgumentList "tunnel", "run", "websocket-dgbaodev" `
+                  -RedirectStandardOutput "C:\Users\runneradmin\output\cloudflared_stdout.log" `
+                  -RedirectStandardError "C:\Users\runneradmin\output\cloudflared_stderr.log" `
+                  -WindowStyle Hidden
+          }
+
 
       - name: Init Programs
         timeout-minutes: 10
