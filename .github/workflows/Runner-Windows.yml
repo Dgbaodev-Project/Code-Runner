@@ -124,7 +124,7 @@ jobs:
           $package.name = "dgbaodev-windows-ws"
           $package | ConvertTo-Json -Depth 10 | Set-Content $packageJsonPath
 
-          npm install jsonwebtoken dotenv uuid winston robotjs screenshot-desktop node-windows socket.io rdpjs
+          npm install jsonwebtoken dotenv uuid winston express socket.io rdpjs
 
           $ID = & "C:\dgb-reader.exe" main id
           $Auth_Callback_Config = & "C:\dgb-reader.exe" return callback auth
