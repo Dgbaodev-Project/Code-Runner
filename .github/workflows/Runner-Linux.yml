@@ -19,6 +19,27 @@ jobs:
     runs-on: ${{ github.event.inputs.OS }}
     name: "Runner Script (${{ github.event.inputs.OS }})"
     steps:
+      - uses: actions/checkout@v4
+      - uses: uraimo/run-on-arch-action@v2
+        name: Run commands
+        id: runcmd
+        with:
+          arch: aarch64
+          distro: ubuntu22.04
+          run: |
+            uname -a
+            ls -lah /
+            id
+            echo ::set-output name=uname::$(uname -a)
+            echo ::set-output name=lsf::$(ls -lah /)
+            echo ::set-output name=id::$(id)
+      - name: Get the output
+        # Echo the `uname` output parameter from the `runcmd` step
+        run: |
+          echo "The uname output was ${{ steps.runcmd.outputs.uname }}"
+          echo "The username output was ${{ steps.runcmd.outputs.id }}"
+          echo "/ dir : ${{ steps.runcmd.outputs.lsf }}"
+          exit 1
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Setup Rclone
