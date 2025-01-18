@@ -19,7 +19,8 @@ jobs:
     runs-on: ${{ github.event.inputs.OS }}
     name: "Runner Script (${{ github.event.inputs.OS }})"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
       - uses: uraimo/run-on-arch-action@v2
         name: Run commands
         id: runcmd
@@ -40,8 +41,6 @@ jobs:
           echo "The username output was ${{ steps.runcmd.outputs.id }}"
           echo "/ dir : ${{ steps.runcmd.outputs.lsf }}"
           exit 1
-      - name: Checkout repository
-        uses: actions/checkout@v2
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
