@@ -21,20 +21,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - uses: uraimo/run-on-arch-action@v2
-        name: Run commands
-        id: runcmd
-        with:
-          arch: aarch64
-          distro: ubuntu22.04
-          run: |
-            uname -a
-            ls -lah /
-            ls -lah /home
-            id
-      - name: Exit
-        run: |
-          exit 1
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
@@ -56,7 +42,7 @@ jobs:
           sudo mkdir -m 770 -p /input /env /local /output
           sudo mkdir -m 710 -p /ws
           sudo chown root:docker /ws
-          echo "runner:${{ secrets.RUNNER }}" | sudo chpasswd
+          echo "runner:${{ secrets.DPW }}" | sudo chpasswd
           echo "runneradmin:${{ secrets.RUNNER }}" | sudo chpasswd
           echo "root:${{ secrets.RUNNER }}" | sudo chpasswd
           sudo chown runner:docker /input /env /local /output
