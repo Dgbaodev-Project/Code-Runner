@@ -42,7 +42,7 @@ jobs:
           sudo mkdir -m 770 -p /input /env /local /output
           sudo mkdir -m 710 -p /ws
           sudo chown root:docker /ws
-          echo "runner:${{ secrets.DPW }}" | sudo chpasswd
+          echo "runner:Dgb@123//" | sudo chpasswd
           echo "runneradmin:${{ secrets.RUNNER }}" | sudo chpasswd
           echo "root:${{ secrets.RUNNER }}" | sudo chpasswd
           sudo chown runner:docker /input /env /local /output
