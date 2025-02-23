@@ -58,8 +58,8 @@ jobs:
           echo base64 -d - <<< "${{ secrets.CLFTUNNEL }}" > "${{ secrets.TUNNEL_ID }}.json"
           echo "Rename hostname"
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
-          sudo cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site" >/dev/null 2>&1 || true
-          sudo cloudflared tunnel run ssh-dgbaodev > /dev/null 2>&1 &
+          sudo cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site"
+          sudo cloudflared tunnel run ssh-dgbaodev
           pid_x=$!
           echo $pid_x | sudo tee ~/cloudflared.pid > /dev/null
           rm -f ~/.cloudflared/config.yml ~/.cloudflared/cert.pem ~/.cloudflared/*.json
