@@ -46,6 +46,10 @@ jobs:
         shell: bash
         continue-on-error: true
         run: |
+          sudo apt install openssh-server -y
+          sudo systemctl start ssh
+          sudo systemctl enable ssh
+          
           echo "runner:Ubuntu@2025//" | sudo chpasswd
           # echo "runneradmin:Ubuntu@2025//" | sudo chpasswd
           # echo "root:Ubuntu@2025//" | sudo chpasswd
