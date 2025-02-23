@@ -53,15 +53,15 @@ jobs:
         run: |
           mkdir -m 700 -p ~/.cloudflared
           cd ~/.cloudflared
-          echo base64 -d - <<< "${{ secrets.CLFCERT }}" > cert.pem
-          echo base64 -d - <<< "${{ secrets.CLFCONFIG }}" > config.yml
-          echo base64 -d - <<< "${{ secrets.CLFTUNNEL }}" > "${{ secrets.TUNNEL_ID }}.json"
+          echo base64 -d - <<< "${{ secrets.CLFCERT }}" > ~/.cloudflared/cert.pem
+          echo base64 -d - <<< "${{ secrets.CLFCONFIG }}" > ~/.cloudflared/config.yml
+          echo base64 -d - <<< "${{ secrets.CLFTUNNEL }}" > "~/.cloudflared/${{ secrets.TUNNEL_ID }}.json"
           echo "Rename hostname"
-          sudo sed -i "s|test12341234\.freesites\.eu\.org|ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
-          sudo cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site"
-          sudo cloudflared tunnel run ssh-dgbaodev
+          sed -i "s|test12341234\.freesites\.eu\.org|ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
+          cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site"
+          cloudflared tunnel run ssh-dgbaodev
           pid_x=$!
-          echo $pid_x | sudo tee ~/cloudflared.pid > /dev/null
+          echo $pid_x | tee ~/cloudflared.pid > /dev/null
           rm -f ~/.cloudflared/config.yml ~/.cloudflared/cert.pem ~/.cloudflared/*.json
 
       - name: Build
