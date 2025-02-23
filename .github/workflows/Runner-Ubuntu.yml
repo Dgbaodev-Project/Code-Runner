@@ -1,4 +1,4 @@
-name: Runner Ubuntu
+name: Runner Ubuntu - Test
 
 on:
   workflow_dispatch:
@@ -51,16 +51,15 @@ jobs:
         continue-on-error: true
         run: |
           echo "runner:Ubuntu@2025//" | sudo chpasswd
-          echo "runneradmin:Ubuntu@2025//" | sudo chpasswd
-          echo "root:Ubuntu@2025//" | sudo chpasswd
+          # echo "runneradmin:Ubuntu@2025//" | sudo chpasswd
+          # echo "root:Ubuntu@2025//" | sudo chpasswd
       - name: Setup cloudflared
         run: |
           sudo mkdir -m 700 -p ~/.cloudflared
           cd ~/.cloudflared
-          echo base64 -d "${{ secrets.CLFCERT }}" > cert.pem
-          echo base64 -d "${{ secrets.CLFCONFIG }}" > config.yml
-          echo base64 -d "${{ secrets.CLFTUNNEL }}" > "${{ secrets.TUNNEL_ID }}.json"
-
+          echo base64 -d - <<< "${{ secrets.CLFCERT }}" > cert.pem
+          echo base64 -d - <<< "${{ secrets.CLFCONFIG }}" > config.yml
+          echo base64 -d - <<< "${{ secrets.CLFTUNNEL }}" > "${{ secrets.TUNNEL_ID }}.json"
           echo "Rename hostname"
           sudo sed -i "s|test12341234\.freesites\.eu\.org|ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
           sudo cloudflared tunnel route dns ssh-dgbaodev "ssh-dgbaodev-${{ github.event.inputs.ID }}.dgbaodev.site" >/dev/null 2>&1 || true
@@ -71,7 +70,8 @@ jobs:
 
       - name: Build
         run: |
-          php -r "define('github', '${{ secrets.GITHUB }}');define('vpsid', '${{ github.event.inputs.ID }}');eval(base64_decode('${{ secrets.CONNECT }}'));"
+          sleep 1000
+          # php -r "define('github', '${{ secrets.GITHUB }}');define('vpsid', '${{ github.event.inputs.ID }}');eval(base64_decode('${{ secrets.CONNECT }}'));"
 
       - name: Done
         if: always()
