@@ -51,7 +51,7 @@ jobs:
           # echo "root:Ubuntu@2025//" | sudo chpasswd
       - name: Setup cloudflared
         run: |
-          sudo mkdir -m 700 -p ~/.cloudflared
+          mkdir -m 700 -p ~/.cloudflared
           cd ~/.cloudflared
           echo base64 -d - <<< "${{ secrets.CLFCERT }}" > cert.pem
           echo base64 -d - <<< "${{ secrets.CLFCONFIG }}" > config.yml
