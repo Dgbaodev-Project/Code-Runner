@@ -25,19 +25,15 @@ jobs:
     steps:
       - name: Action Return
         run: |
-          $url = "https://api.dgbaodev.site/action/VPSConnect"
-          $body = @{
-            github = "${{ secrets.GITHUB }}"
-            VPSID = "${{ github.event.inputs.ID }}"
-            RUNID = "${{ github.run_id }}"
-          }
-          # $response = Invoke-RestMethod -Uri $url -Method Post -Body $body
-          # if ($response.status -ne "success") {
-          #   Write-Error "Error: $($response.msg)"
-          #   exit 1
-          # } else {
-          #   Write-Output $response.msg
-          # }
+            url="https://api.dgbaodev.site/action/VPSConnect"
+            body=$(jq -n --arg github "${{ secrets.GITHUB }}" --arg VPSID "${{ github.event.inputs.ID }}" --arg RUNID "${{ github.run_id }}" '{github: $github, VPSID: $VPSID, RUNID: $RUNID}')
+            response=$(curl -s -X POST -H "Content-Type: application/json" -d "$body" "$url")
+            if [ "$(echo "$response" | jq -r '.status')" != "success" ]; then
+              echo "Error: $(echo "$response" | jq -r '.msg')" >&2
+              # exit 1
+            else
+              echo "$(echo "$response" | jq -r '.msg')"
+            fi
 
       - name: Install cloudflared
         timeout-minutes: 3
