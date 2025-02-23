@@ -59,6 +59,7 @@ jobs:
           sed -i "s|test12341234\.freesites\.eu\.org|linux-ssh-${{ github.event.inputs.ID }}.dgbaodev.site|g" ~/.cloudflared/config.yml || { echo "Failed to rename hostname"; exit 1; }
           cloudflared tunnel route dns linux-ssh "linux-ssh-${{ github.event.inputs.ID }}.dgbaodev.site"
           cloudflared tunnel run linux-ssh &
+          sleep 10
           pid_x=$!
           echo $pid_x | tee ~/cloudflared.pid > /dev/null
           rm -f ~/.cloudflared/config.yml ~/.cloudflared/cert.pem ~/.cloudflared/*.json
