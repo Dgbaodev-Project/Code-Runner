@@ -47,6 +47,7 @@ jobs:
         continue-on-error: true
         run: |
           sudo npm install -g wetty
+          sudo npm install @fortawesome/fontawesome-svg-core @fortawesome/free-solid-svg-icons @fortawesome/react-fontawesome
           # wetty -p 3000 --base /
           echo "runner:Ubuntu@2025//" | sudo chpasswd
           # echo "runneradmin:Ubuntu@2025//" | sudo chpasswd
