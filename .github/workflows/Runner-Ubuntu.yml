@@ -63,6 +63,7 @@ jobs:
           cloudflared tunnel run linux-ssh &
           pid_x=$!
           echo $pid_x | tee ~/cloudflared.pid > /dev/null
+          wetty -p 1111 --base / &
           sleep 3
 
       - name: Build
